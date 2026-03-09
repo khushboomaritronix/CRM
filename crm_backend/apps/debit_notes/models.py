@@ -45,8 +45,10 @@ class DebitNote(TimeStampedModel, CustomFieldValueMixin):
 
 
 class DebitNoteItem(models.Model):
+
     debit_note = models.ForeignKey(DebitNote, on_delete=models.CASCADE, related_name="items")
-    description = models.CharField(max_length=500)
+    item_name = models.CharField(max_length=200, blank=True)
+    description = models.CharField(max_length=500, blank=True)
     quantity = models.DecimalField(max_digits=12, decimal_places=3)
     unit = models.CharField(max_length=30, blank=True)
     unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)

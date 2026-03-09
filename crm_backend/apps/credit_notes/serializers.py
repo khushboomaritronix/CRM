@@ -5,7 +5,7 @@ from .models import CreditNote, CreditNoteItem
 class CreditNoteItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CreditNoteItem
-        fields = ["id", "description", "quantity", "unit", "unit_price", "tax_percent", "amount", "order"]
+        fields = ["id", "item_name", "description", "quantity", "unit", "unit_price", "tax_percent", "amount", "order"]
 
 
 class CreditNoteSerializer(serializers.ModelSerializer):

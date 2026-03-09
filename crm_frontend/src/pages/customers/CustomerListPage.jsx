@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Pencil, Trash2, Download, Upload } from "lucide-react";
-import { fetchCustomers, deleteCustomers, selectList, selectLoading, selectPagination } from "../../features/customers/customersSlice";
+import {
+  fetchCustomers,
+  deleteCustomers,
+  selectList,
+  selectLoading,
+  selectPagination,
+} from "../../features/customers/customersSlice";
 import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable, { Badge } from "../../components/common/DataTable";
@@ -26,12 +32,15 @@ export default function CustomerListPage() {
   }, [dispatch, search, page]);
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Delete customer "${name}"? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete customer "${name}"? This cannot be undone.`))
+      return;
     dispatch(deleteCustomers(id));
   };
 
   const handleExport = async () => {
-    const res = await api.get("/bulk/export/customers/", { responseType: "blob" });
+    const res = await api.get("/bulk/export/customers/", {
+      responseType: "blob",
+    });
     const url = URL.createObjectURL(res.data);
     const a = document.createElement("a");
     a.href = url;
@@ -40,17 +49,32 @@ export default function CustomerListPage() {
   };
 
   const columns = [
-    { key: "name", label: "Name", sortable: true, render: (v, row) => (
-      <Link to={`/customers/${row.id}`} style={styles.nameLink}>{v}</Link>
-    )},
+    {
+      key: "name",
+      label: "Name",
+      sortable: true,
+      render: (v, row) => (
+        <Link to={`/customers/${row.id}`} style={styles.nameLink}>
+          {v}
+        </Link>
+      ),
+    },
     { key: "email", label: "Email" },
     { key: "phone", label: "Phone" },
     { key: "company_name", label: "Company" },
-    { key: "gstin", label: "GSTIN", render: v => v || "—" },
-    { key: "is_active", label: "Status", render: v => (
-      <Badge color={v ? "green" : "gray"}>{v ? "Active" : "Inactive"}</Badge>
-    )},
-    { key: "created_at", label: "Created", render: v => new Date(v).toLocaleDateString() },
+    { key: "gstin", label: "GSTIN", render: (v) => v || "—" },
+    {
+      key: "is_active",
+      label: "Status",
+      render: (v) => (
+        <Badge color={v ? "green" : "gray"}>{v ? "Active" : "Inactive"}</Badge>
+      ),
+    },
+    {
+      key: "created_at",
+      label: "Created",
+      render: (v) => new Date(v).toLocaleDateString(),
+    },
   ];
 
   return (
@@ -58,7 +82,10 @@ export default function CustomerListPage() {
       <PageHeader
         title="Customers"
         subtitle={`${pagination.count} total customers`}
-        breadcrumbs={[{ label: "Dashboard", path: "/dashboard" }, { label: "Customers" }]}
+        breadcrumbs={[
+          { label: "Dashboard", path: "/dashboard" },
+          { label: "Customers" },
+        ]}
         actions={
           <div style={styles.headerActions}>
             {canExport && (
@@ -85,7 +112,10 @@ export default function CustomerListPage() {
           type="text"
           placeholder="Search by name, email, phone, company, GSTIN..."
           value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
         />
       </div>
 
@@ -124,26 +154,56 @@ export default function CustomerListPage() {
 const styles = {
   headerActions: { display: "flex", gap: 8, alignItems: "center" },
   btnPrimary: {
-    display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 16px",
-    background: "#2E86AB", color: "white", borderRadius: 8, fontWeight: 600,
-    fontSize: 13.5, textDecoration: "none", border: "none", cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    padding: "9px 16px",
+    background: "#2E86AB",
+    color: "white",
+    borderRadius: 8,
+    fontWeight: 600,
+    fontSize: 13.5,
+    textDecoration: "none",
+    border: "none",
+    cursor: "pointer",
   },
   btnSecondary: {
-    display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px",
-    background: "white", color: "#2D3748", borderRadius: 8, fontWeight: 600,
-    fontSize: 13.5, textDecoration: "none", border: "1px solid #E2E8F0", cursor: "pointer",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 6,
+    padding: "9px 14px",
+    background: "white",
+    color: "#2D3748",
+    borderRadius: 8,
+    fontWeight: 600,
+    fontSize: 13.5,
+    textDecoration: "none",
+    border: "1px solid #E2E8F0",
+    cursor: "pointer",
   },
   searchBar: { marginBottom: 16 },
   searchInput: {
-    width: "100%", maxWidth: 480, padding: "10px 14px",
-    border: "1.5px solid #E2E8F0", borderRadius: 8, fontSize: 14,
-    outline: "none", fontFamily: "inherit",
+    width: "100%",
+    maxWidth: 480,
+    padding: "10px 14px",
+    border: "1.5px solid #E2E8F0",
+    borderRadius: 8,
+    fontSize: 14,
+    outline: "none",
+    fontFamily: "inherit",
   },
   nameLink: { color: "#2E86AB", fontWeight: 600, textDecoration: "none" },
   rowActions: { display: "flex", gap: 4, justifyContent: "flex-end" },
   btnIcon: {
-    background: "none", border: "1px solid #E2E8F0", borderRadius: 6,
-    width: 30, height: 30, cursor: "pointer", display: "flex",
-    alignItems: "center", justifyContent: "center", color: "#4A5568",
+    background: "none",
+    border: "1px solid #E2E8F0",
+    borderRadius: 6,
+    width: 30,
+    height: 30,
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#4A5568",
   },
 };

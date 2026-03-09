@@ -1,9 +1,9 @@
 from django.db import models
-from apps.core.models import TimeStampedModel
+from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 from apps.customers.models import Customer
 
 
-class CustomerPO(TimeStampedModel):
+class CustomerPO(TimeStampedModel, CustomFieldValueMixin):
     STATUS_CHOICES = [
         ("received", "Received"),
         ("processing", "Processing"),

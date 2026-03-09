@@ -1,5 +1,5 @@
 from django.db import models
-from apps.core.models import TimeStampedModel
+from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 from apps.customers.models import Customer
 from apps.vendors.models import Vendor
 
@@ -26,7 +26,7 @@ PAYMENT_STATUS = [
 ]
 
 
-class Payment(TimeStampedModel):
+class Payment(TimeStampedModel, CustomFieldValueMixin):
     payment_number = models.CharField(max_length=50, unique=True)
     payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE)
     payment_method = models.CharField(max_length=30, choices=PAYMENT_METHOD, default="bank_transfer")

@@ -12,6 +12,7 @@ import {
 import PageHeader from "../../components/common/PageHeader";
 import DocLineItems from "../../components/common/DocLineItems";
 import api from "../../services/api";
+import CustomFieldRenderer from "../../components/common/CustomFieldRenderer";
 
 const Cs = {
   background: "#fff",
@@ -64,7 +65,7 @@ export default function POFormPage() {
     reset,
     watch,
     formState: { errors: e },
-  } = useForm({ defaultValues: { currency: "INR", status: "draft" } });
+  } = useForm({ defaultValues: { currency: "INR", status: "draft",custom_field_values: {}, } });
   const [vendors, setVendors] = useState([]);
   const [items, setItems] = useState([
     {
@@ -89,43 +90,79 @@ export default function POFormPage() {
     if (isEdit) dispatch(fetchOnePurchaseOrders(id));
   }, [dispatch, id, isEdit]);
 
+  // useEffect(() => {
+  //   if (isEdit && selected) {
+  //     reset(selected);
+  //     if (selected.items?.length > 0) setItems(selected.items);
+  //     if (selected.discount_percent)
+  //       setDiscount({ value: selected.discount_percent, type: "%" });
+  //     if (selected.adjustment) setAdjustment(selected.adjustment);
+  //   }
+  // }, [selected, isEdit, reset]);
   useEffect(() => {
-    if (isEdit && selected) {
-      reset(selected);
-      if (selected.items?.length > 0) setItems(selected.items);
-      if (selected.discount_percent)
-        setDiscount({ value: selected.discount_percent, type: "%" });
-      if (selected.adjustment) setAdjustment(selected.adjustment);
-    }
-  }, [selected, isEdit, reset]);
+  if (isEdit && selected) {
+    reset({
+      ...selected,
+      custom_field_values: selected.custom_field_values || {},
+    });
 
+    if (selected.items?.length > 0) setItems(selected.items);
+
+    if (selected.discount_percent)
+      setDiscount({ value: selected.discount_percent, type: "%" });
+
+    if (selected.adjustment) setAdjustment(selected.adjustment);
+  }
+}, [selected, isEdit, reset]);
+
+  // const onSubmit = async (data) => {
+  //   const discPercent = discount.type === "%" ? +discount.value : 0;
+  //   const discAmount = discount.type === "flat" ? +discount.value : 0;
+  //   const res = isEdit
+  //     ? await dispatch(
+  //         updatePurchaseOrders({
+  //           id,
+  //           data: {
+  //             ...data,
+  //             items,
+  //             discount_percent: discPercent,
+  //             discount_amount: discAmount,
+  //             adjustment: +adjustment,
+  //           },
+  //         }),
+  //       )
+  //     : await dispatch(
+  //         createPurchaseOrders({
+  //           ...data,
+  //           items,
+  //           discount_percent: discPercent,
+  //           discount_amount: discAmount,
+  //           adjustment: +adjustment,
+  //         }),
+  //       );
+  //   if (!res.error) navigate("/purchase-orders");
+  // };
   const onSubmit = async (data) => {
-    const discPercent = discount.type === "%" ? +discount.value : 0;
-    const discAmount = discount.type === "flat" ? +discount.value : 0;
-    const res = isEdit
-      ? await dispatch(
-          updatePurchaseOrders({
-            id,
-            data: {
-              ...data,
-              items,
-              discount_percent: discPercent,
-              discount_amount: discAmount,
-              adjustment: +adjustment,
-            },
-          }),
-        )
-      : await dispatch(
-          createPurchaseOrders({
-            ...data,
-            items,
-            discount_percent: discPercent,
-            discount_amount: discAmount,
-            adjustment: +adjustment,
-          }),
-        );
-    if (!res.error) navigate("/purchase-orders");
+  const discPercent = discount.type === "%" ? +discount.value : 0;
+  const discAmount = discount.type === "flat" ? +discount.value : 0;
+
+  const { custom_field_values, ...rest } = data;
+
+  const payload = {
+    ...rest,
+    items,
+    discount_percent: discPercent,
+    discount_amount: discAmount,
+    adjustment: +adjustment,
+    custom_field_values: custom_field_values || {},
   };
+
+  const res = isEdit
+    ? await dispatch(updatePurchaseOrders({ id, data: payload }))
+    : await dispatch(createPurchaseOrders(payload));
+
+  if (!res.error) navigate("/purchase-orders");
+};
 
   return (
     <div>
@@ -233,6 +270,16 @@ export default function POFormPage() {
             <textarea rows={2} style={Ta} {...reg("terms")} />
           </div>
         </div>
+        <div style={Cs}>
+  <div style={Ss}>Custom Fields</div>
+
+  <CustomFieldRenderer
+    moduleSlug="purchase_orders"
+    register={reg}
+    errors={e}
+    defaultValues={selected?.custom_field_values}
+  />
+</div>
         <div
           style={{
             display: "flex",

@@ -1,8 +1,9 @@
 from django.db import models
 from apps.core.models import TimeStampedModel
+from apps.core.models import CustomFieldValueMixin
 
 
-class CompanyProfile(TimeStampedModel):
+class CompanyProfile(TimeStampedModel, CustomFieldValueMixin):
     name = models.CharField(max_length=200)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=20, blank=True)

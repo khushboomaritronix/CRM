@@ -51,7 +51,15 @@ const Is = {
 };
 const Sl = { ...Is, background: "#fff" };
 const Ta = { ...Is, resize: "vertical" };
-const STATS = ["draft", "sent", "paid", "partial", "overdue", "cancelled"];
+const STATS = [
+  "draft",
+  "sent",
+  "paid",
+  "partial",
+  "overdue",
+  "cancelled",
+  "unpaid",
+];
 const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "JPY"];
 
 export default function InvoiceFormPage() {

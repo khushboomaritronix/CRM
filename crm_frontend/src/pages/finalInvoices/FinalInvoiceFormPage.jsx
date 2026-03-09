@@ -13,7 +13,7 @@ import PageHeader from "../../components/common/PageHeader";
 import DocLineItems from "../../components/common/DocLineItems";
 import CustomerAddressBlock from "../../components/common/CustomerAddressBlock";
 import api from "../../services/api";
-
+import CustomFieldRenderer from "../../components/common/CustomFieldRenderer";
 const Cs = {
   background: "#fff",
   borderRadius: 10,
@@ -50,7 +50,7 @@ const Is = {
 };
 const Sl = { ...Is, background: "#fff" };
 const Ta = { ...Is, resize: "vertical" };
-const STATS = ["draft", "sent", "paid", "partial", "overdue", "cancelled","UNPAID"];
+const STATS = ["draft", "sent", "paid", "partial", "overdue", "cancelled","unpaid"];
 const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "JPY"];
 
 export default function FinalInvoiceFormPage() {
@@ -66,7 +66,7 @@ export default function FinalInvoiceFormPage() {
     reset,
     watch,
     formState: { errors: e },
-  } = useForm({ defaultValues: { currency: "INR", status: "draft" } });
+  } = useForm({ defaultValues: { currency: "INR", status: "draft" ,custom_field_values: {},} });
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [items, setItems] = useState([
@@ -100,33 +100,72 @@ export default function FinalInvoiceFormPage() {
     } else setSelectedCustomer(null);
   }, [watchedCustomer, customers]);
 
+  // useEffect(() => {
+  //   if (isEdit && selected) {
+  //     reset(selected);
+  //     if (selected.items?.length > 0) setItems(selected.items);
+  //     if (selected.discount_percent)
+  //       setDiscount({ value: selected.discount_percent, type: "%" });
+  //     else if (selected.discount_amount)
+  //       setDiscount({ value: selected.discount_amount, type: "flat" });
+  //     if (selected.adjustment) setAdjustment(selected.adjustment);
+  //   }
+  // }, [selected, isEdit, reset]);
   useEffect(() => {
-    if (isEdit && selected) {
-      reset(selected);
-      if (selected.items?.length > 0) setItems(selected.items);
-      if (selected.discount_percent)
-        setDiscount({ value: selected.discount_percent, type: "%" });
-      else if (selected.discount_amount)
-        setDiscount({ value: selected.discount_amount, type: "flat" });
-      if (selected.adjustment) setAdjustment(selected.adjustment);
-    }
-  }, [selected, isEdit, reset]);
+  if (isEdit && selected) {
+    reset({
+      ...selected,
+      custom_field_values: selected.custom_field_values || {},
+    });
+
+    if (selected.items?.length > 0) setItems(selected.items);
+
+    if (selected.discount_percent)
+      setDiscount({ value: selected.discount_percent, type: "%" });
+    else if (selected.discount_amount)
+      setDiscount({ value: selected.discount_amount, type: "flat" });
+
+    if (selected.adjustment) setAdjustment(selected.adjustment);
+  }
+}, [selected, isEdit, reset]);
+
+  // const onSubmit = async (data) => {
+  //   const discPercent = discount.type === "%" ? +discount.value : 0;
+  //   const discAmount = discount.type === "flat" ? +discount.value : 0;
+  //   const payload = {
+  //     ...data,
+  //     items,
+  //     discount_percent: discPercent,
+  //     discount_amount: discAmount,
+  //     adjustment: +adjustment,
+  //   };
+  //   const res = isEdit
+  //     ? await dispatch(updateFinalInvoices({ id, data: payload }))
+  //     : await dispatch(createFinalInvoices(payload));
+  //   if (!res.error) navigate("/final-invoices");
+  // };
 
   const onSubmit = async (data) => {
-    const discPercent = discount.type === "%" ? +discount.value : 0;
-    const discAmount = discount.type === "flat" ? +discount.value : 0;
-    const payload = {
-      ...data,
-      items,
-      discount_percent: discPercent,
-      discount_amount: discAmount,
-      adjustment: +adjustment,
-    };
-    const res = isEdit
-      ? await dispatch(updateFinalInvoices({ id, data: payload }))
-      : await dispatch(createFinalInvoices(payload));
-    if (!res.error) navigate("/final-invoices");
+  const discPercent = discount.type === "%" ? +discount.value : 0;
+  const discAmount = discount.type === "flat" ? +discount.value : 0;
+
+  const { custom_field_values, ...rest } = data;
+
+  const payload = {
+    ...rest,
+    items,
+    discount_percent: discPercent,
+    discount_amount: discAmount,
+    adjustment: +adjustment,
+    custom_field_values: custom_field_values || {},
   };
+
+  const res = isEdit
+    ? await dispatch(updateFinalInvoices({ id, data: payload }))
+    : await dispatch(createFinalInvoices(payload));
+
+  if (!res.error) navigate("/final-invoices");
+};
 
   return (
     <div>
@@ -262,6 +301,16 @@ export default function FinalInvoiceFormPage() {
             </div>
           </div>
         </div>
+        <div style={Cs}>
+  <div style={Ss}>Custom Fields</div>
+
+  <CustomFieldRenderer
+    moduleSlug="final_invoices"
+    register={reg}
+    errors={e}
+    defaultValues={selected?.custom_field_values}
+  />
+</div>
         <div
           style={{
             display: "flex",

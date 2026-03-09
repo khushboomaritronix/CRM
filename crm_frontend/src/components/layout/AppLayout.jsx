@@ -55,12 +55,12 @@ const NAV_ITEMS = [
   { label: "Vendors", path: "/vendors", icon: Building2, module: "vendors" },
   { label: "RFQ", path: "/rfq", icon: FileSearch, module: "rfq" },
   {
-    label: "Quatation",
+    label: "Estimate",
     path: "/estimates",
     icon: FileText,
     module: "estimates",
   },
-  { label: "Invoices", path: "/invoices", icon: Receipt, module: "invoices" },
+  // { label: "Invoices", path: "/invoices", icon: Receipt, module: "invoices" },
   {
     label: "Proforma Invoices",
     path: "/proforma-invoices",

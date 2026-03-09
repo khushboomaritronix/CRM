@@ -10,7 +10,7 @@ DOCUMENT_STATUS = [
     ("partial", "Partially Paid"),
     ("overdue", "Overdue"),
     ("cancelled", "Cancelled"),
-    ("UNPAID", "UNPAID"),
+    ("unpaid", "Unpaid"),
 
 ]
 

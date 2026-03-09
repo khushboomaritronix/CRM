@@ -5,7 +5,7 @@ from .models import DebitNote, DebitNoteItem
 class DebitNoteItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = DebitNoteItem
-        fields = ["id", "description", "quantity", "unit", "unit_price", "tax_percent", "amount", "order"]
+        fields = ["id", "item_name", "description", "quantity", "unit", "unit_price", "tax_percent", "amount", "order"]
 
 
 class DebitNoteSerializer(serializers.ModelSerializer):

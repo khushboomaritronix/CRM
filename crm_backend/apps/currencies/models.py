@@ -1,8 +1,8 @@
 from django.db import models
-from apps.core.models import TimeStampedModel
+from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 
 
-class Currency(TimeStampedModel):
+class Currency(TimeStampedModel, CustomFieldValueMixin):
     code = models.CharField(max_length=3, unique=True)  # INR, USD, EUR
     name = models.CharField(max_length=100)
     symbol = models.CharField(max_length=5)

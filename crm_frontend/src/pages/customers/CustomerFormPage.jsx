@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { createCustomers, updateCustomers, fetchOneCustomers, selectSelected, selectSubmitting } from "../../features/customers/customersSlice";
 import PageHeader from "../../components/common/PageHeader";
-
+import CustomFieldRenderer from "../../components/common/CustomFieldRenderer";
 const FIELDS = [
   { section: "Basic Information", fields: [
     { name: "name", label: "Full Name *", required: true, colSpan: 2 },
@@ -47,25 +47,57 @@ export default function CustomerFormPage() {
   const selected = useSelector(selectSelected);
   const submitting = useSelector(selectSubmitting);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
-
+  // const { register, handleSubmit, reset, formState: { errors } } = useForm();
+const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  defaultValues: {
+    custom_field_values: {}
+  }
+});
   useEffect(() => {
     if (isEdit) {
       dispatch(fetchOneCustomers(id));
     }
   }, [dispatch, id, isEdit]);
 
-  useEffect(() => {
-    if (isEdit && selected) reset(selected);
-  }, [selected, isEdit, reset]);
+  // useEffect(() => {
+  //   if (isEdit && selected) reset(selected);
+  // }, [selected, isEdit, reset]);
+useEffect(() => {
+  if (isEdit && selected) {
+    reset({
+      ...selected,
+      custom_field_values: selected.custom_field_values || {}
+    });
+  }
+}, [selected, isEdit, reset]);
 
-  const onSubmit = async (data) => {
-    let result;
-    if (isEdit) {
-      result = await dispatch(updateCustomers({ id, data }));
-    } else {
-      result = await dispatch(createCustomers(data));
-    }
+  // const onSubmit = async (data) => {
+  //   let result;
+  //   if (isEdit) {
+  //     result = await dispatch(updateCustomers({ id, data }));
+  //   } else {
+  //     result = await dispatch(createCustomers(data));
+  //   }
+  //   if (!result.error) {
+  //     navigate("/customers");
+  //   }
+  // };
+   const onSubmit = async (data) => {
+
+  const { custom_field_values, ...rest } = data;
+
+  const payload = {
+    ...rest,
+    custom_field_values: custom_field_values || {}
+  };
+
+  let result;
+
+  if (isEdit) {
+    result = await dispatch(updateCustomers({ id, data: payload }));
+  } else {
+    result = await dispatch(createCustomers(payload));
+  }
     if (!result.error) {
       navigate("/customers");
     }
@@ -112,6 +144,16 @@ export default function CustomerFormPage() {
             </div>
           </div>
         ))}
+        <div style={styles.card}>
+  <h3 style={styles.sectionTitle}>Custom Fields</h3>
+
+  <CustomFieldRenderer
+    moduleSlug="customers"
+    register={register}
+    errors={errors}
+    defaultValues={selected?.custom_field_values}
+  />
+</div>
 
         <div style={styles.formFooter}>
           <button type="button" style={styles.btnCancel} onClick={() => navigate("/customers")}>

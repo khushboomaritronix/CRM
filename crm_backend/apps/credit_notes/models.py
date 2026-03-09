@@ -44,9 +44,11 @@ class CreditNote(TimeStampedModel, CustomFieldValueMixin):
         self.save(update_fields=["subtotal", "tax_amount", "total"])
 
 
+
 class CreditNoteItem(models.Model):
+    item_name = models.CharField(max_length=200, blank=True) 
     credit_note = models.ForeignKey(CreditNote, on_delete=models.CASCADE, related_name="items")
-    description = models.CharField(max_length=500)
+    description = models.CharField(max_length=500, blank=True)
     quantity = models.DecimalField(max_digits=12, decimal_places=3)
     unit = models.CharField(max_length=30, blank=True)
     unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)

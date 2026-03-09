@@ -1228,13 +1228,27 @@ export default function CompanySettingsPage() {
   //     if (company.signature?.url) setSignaturePreview(company.signature.url);
   //   }
   // }, [company, reset]);
-  useEffect(() => {
-  if (company) {
-    // Exclude logo and signature from the form (they are not text fields)
-    const { logo, signature, ...rest } = company;
-    reset(rest);
+//   useEffect(() => {
+//   if (company) {
+//     // Exclude logo and signature from the form (they are not text fields)
+//     const { logo, signature, ...rest } = company;
+//     reset(rest);
     
-    // Set previews from the URL strings (if they exist)
+//     // Set previews from the URL strings (if they exist)
+//     if (logo) setLogoPreview(logo);
+//     if (signature) setSignaturePreview(signature);
+//   }
+// }, [company, reset]);
+
+useEffect(() => {
+  if (company) {
+    const { logo, signature, ...rest } = company;
+
+    reset({
+      ...rest,
+      custom_field_values: company.custom_field_values || {},
+    });
+
     if (logo) setLogoPreview(logo);
     if (signature) setSignaturePreview(signature);
   }
@@ -1274,11 +1288,23 @@ const onSubmit = async (data) => {
   
 
   // Append primitive fields
+  // Object.entries(cleanedData).forEach(([k, v]) => {
+  //   if (v === null || v === undefined || v === "") return;
+  //   if (typeof v === "object") return; // skip nested objects
+  //   fd.append(k, v);
+  // });
+
   Object.entries(cleanedData).forEach(([k, v]) => {
-    if (v === null || v === undefined || v === "") return;
-    if (typeof v === "object") return; // skip nested objects
-    fd.append(k, v);
-  });
+
+  if (k === "custom_field_values") {
+    fd.append("custom_field_values", JSON.stringify(v || {}));
+    return;
+  }
+
+  if (v === null || v === undefined || v === "") return;
+
+  fd.append(k, v);
+});
 
   // 3. Append files only if they are valid File objects
   if (logoFile && logoFile instanceof File) {
@@ -1423,12 +1449,17 @@ const onSubmit = async (data) => {
             error={errors.footer_text?.message}
           />
         </div>
-        <CustomFieldRenderer
-  moduleSlug="company"
-  register={register}
-  errors={errors}
-  defaultValues={company?.custom_field_values}
-/>
+      <div style={S.card}>
+  <div style={S.sec}>Custom Fields</div>
+
+  <CustomFieldRenderer
+    moduleSlug="company"
+    register={register}
+    errors={errors}
+    defaultValues={company?.custom_field_values}
+  />
+</div>
+
 
         <div style={S.footer}>
           <button

@@ -1,9 +1,9 @@
 from django.db import models
-from apps.core.models import TimeStampedModel
+from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 from apps.modules.models import Module
 
 
-class PDFTemplate(TimeStampedModel):
+class PDFTemplate(TimeStampedModel, CustomFieldValueMixin):
     MODULE_TYPES = [
         ("invoice", "Invoice"),
         ("estimate", "Estimate"),
