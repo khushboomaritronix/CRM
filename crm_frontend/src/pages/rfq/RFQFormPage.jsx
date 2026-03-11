@@ -125,11 +125,11 @@ const STATS = [
   { value: "received", label: "Received" },
   { value: "cancelled", label: "Cancelled" },
 ];
-const CURR = [
-  { v: "INR", l: "INR" },
-  { v: "USD", l: "USD" },
-  { v: "EUR", l: "EUR" },
-];
+// const CURR = [
+//   { v: "INR", l: "INR" },
+//   { v: "USD", l: "USD" },
+//   { v: "EUR", l: "EUR" },
+// ];
 
 export default function RFQFormPage() {
   const dispatch = useDispatch();
@@ -138,13 +138,14 @@ export default function RFQFormPage() {
   const isEdit = !!id;
   const selected = useSelector(selectSelected);
   const submitting = useSelector(selectSubmitting);
+  const [currencies, setCurrencies] = useState([]);
   const {
     register: reg,
     handleSubmit,
     reset,
     watch,
     formState: { errors: errs },
-  } = useForm({ defaultValues: { currency: "INR", status: "draft" , custom_field_values: {},} });
+  } = useForm({ defaultValues: { currency: "", status: "draft" , custom_field_values: {},} });
   const [items, setItems] = useState([{ ...DI }]);
   const [parties, setParties] = useState([]);
   const [totals, setTotals] = useState({
@@ -152,7 +153,11 @@ export default function RFQFormPage() {
     tax: "0.00",
     tot: "0.00",
   });
-
+useEffect(() => {
+  api.get("/currencies/?is_active=true").then((r) => {
+    setCurrencies(Array.isArray(r.data) ? r.data : r.data.results || []);
+  });
+}, []);
   useEffect(() => {
     api
       .get("/vendors/?page_size=200")
@@ -205,6 +210,11 @@ export default function RFQFormPage() {
         return u;
       }),
     );
+    const selectedCurrency = currencies.find(
+  (c) => String(c.id) === String(watch("currency"))
+);
+
+  const cur = selectedCurrency?.symbol || "₹";
 
   // const onSubmit = async (data) => {
   //   const payload = { ...data, items };
@@ -229,7 +239,7 @@ export default function RFQFormPage() {
 
   if (!res.error) navigate("/rfq");
 };
-  const cur = watch("currency") || "INR";
+  // const cur = watch("currency") || "INR";
 
   return (
     <div>
@@ -315,13 +325,22 @@ export default function RFQFormPage() {
             </div>
             <div>
               <label style={S.label}>Currency</label>
-              <select style={S.sel} {...reg("currency")}>
+              {/* <select style={S.sel} {...reg("currency")}>
                 {CURR.map((o) => (
                   <option key={o.v} value={o.v}>
                     {o.l}
                   </option>
                 ))}
-              </select>
+              </select> */}
+              <select style={S.sel} {...reg("currency")}>
+  <option value="">Select Currency...</option>
+
+  {currencies.map((c) => (
+    <option key={c.id} value={c.id}>
+      {c.code} ({c.symbol})
+    </option>
+  ))}
+</select>
             </div>
             <div>
               <label style={S.label}>Reference</label>
@@ -365,6 +384,18 @@ export default function RFQFormPage() {
             >
               <thead>
                 <tr style={{ background: "#F8FAFC" }}>
+                  <th
+                    style={{
+                      padding: "10px 12px",
+                      textAlign: "left",
+                      fontWeight: 600,
+                      color: "#6B7280",
+                      borderBottom: "1px solid #E2E8F0",
+                      minWidth: 100,
+                    }}
+                  >
+                    Item
+                  </th>
                   <th
                     style={{
                       padding: "10px 12px",
@@ -445,6 +476,16 @@ export default function RFQFormPage() {
               <tbody>
                 {items.map((item, idx) => (
                   <tr key={idx} style={{ borderBottom: "1px solid #EDF2F7" }}>
+                     <td style={{ padding: "7px 10px" }}>
+                      <input
+                        style={{ ...S.inp, minWidth: 90 }}
+                        value={item.item_name}
+                        onChange={(e) =>
+                          upd(idx, "item_name", e.target.value)
+                        }
+                        placeholder="Item name"
+                      />
+                    </td>
                     <td style={{ padding: "7px 10px" }}>
                       <input
                         style={{ ...S.inp, minWidth: 180 }}

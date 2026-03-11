@@ -9,8 +9,8 @@ from .models import (
 
 class BaseItemSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ["id", "item_name",  "quantity", "unit", "unit_price",
-                  "tax_percent", "amount", "order"]
+        fields = ["id", "item_name", "description", "quantity", "unit", "unit_price",
+                  "tax_percent", "amount", "order", "HSN_SAC_code"]
 
 
 class EstimateItemSerializer(BaseItemSerializer):
@@ -21,6 +21,8 @@ class EstimateItemSerializer(BaseItemSerializer):
 class EstimateSerializer(serializers.ModelSerializer):
     items = EstimateItemSerializer(many=True, required=False)
     customer_name = serializers.ReadOnlyField(source="customer.name")
+    currency_code = serializers.CharField(source="currency.code", read_only=True)
+    currency_symbol = serializers.CharField(source="currency.symbol", read_only=True)
 
     class Meta:
         model = Estimate
@@ -58,6 +60,8 @@ class InvoiceItemSerializer(BaseItemSerializer):
 class InvoiceSerializer(serializers.ModelSerializer):
     items = InvoiceItemSerializer(many=True, required=False)
     customer_name = serializers.ReadOnlyField(source="customer.name")
+    currency_code = serializers.CharField(source="currency.code", read_only=True)
+    currency_symbol = serializers.CharField(source="currency.symbol", read_only=True)
 
     class Meta:
         model = Invoice
@@ -95,6 +99,8 @@ class ProformaItemSerializer(BaseItemSerializer):
 class ProformaInvoiceSerializer(serializers.ModelSerializer):
     items = ProformaItemSerializer(many=True, required=False)
     customer_name = serializers.ReadOnlyField(source="customer.name")
+    currency_code = serializers.CharField(source="currency.code", read_only=True)
+    currency_symbol = serializers.CharField(source="currency.symbol", read_only=True)
 
     class Meta:
         model = ProformaInvoice
@@ -132,6 +138,8 @@ class POItemSerializer(BaseItemSerializer):
 class PurchaseOrderSerializer(serializers.ModelSerializer):
     items = POItemSerializer(many=True, required=False)
     vendor_name = serializers.ReadOnlyField(source="vendor.name")
+    currency_code = serializers.CharField(source="currency.code", read_only=True)
+    currency_symbol = serializers.CharField(source="currency.symbol", read_only=True)
 
     class Meta:
         model = PurchaseOrder
@@ -169,6 +177,8 @@ class FinalInvoiceItemSerializer(BaseItemSerializer):
 class FinalInvoiceSerializer(serializers.ModelSerializer):
     items = FinalInvoiceItemSerializer(many=True, required=False)
     customer_name = serializers.ReadOnlyField(source="customer.name")
+    currency_code = serializers.CharField(source="currency.code", read_only=True)
+    currency_symbol = serializers.CharField(source="currency.symbol", read_only=True)
 
     class Meta:
         model = FinalInvoice

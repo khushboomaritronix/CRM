@@ -50,7 +50,7 @@ const Is = {
 const Sl = { ...Is, background: "#fff" };
 const Ta = { ...Is, resize: "vertical" };
 const STATS = ["draft", "approved", "sent", "received", "cancelled"];
-const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "JPY"];
+// const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "JPY"];
 
 export default function POFormPage() {
   const dispatch = useDispatch();
@@ -59,13 +59,14 @@ export default function POFormPage() {
   const isEdit = !!id;
   const selected = useSelector(selectSelected);
   const submitting = useSelector(selectSubmitting);
+  const [currencies, setCurrencies] = useState([]);
   const {
     register: reg,
     handleSubmit,
     reset,
     watch,
     formState: { errors: e },
-  } = useForm({ defaultValues: { currency: "INR", status: "draft",custom_field_values: {}, } });
+  } = useForm({ defaultValues: { currency: "", status: "draft",custom_field_values: {}, } });
   const [vendors, setVendors] = useState([]);
   const [items, setItems] = useState([
     {
@@ -89,7 +90,11 @@ export default function POFormPage() {
       );
     if (isEdit) dispatch(fetchOnePurchaseOrders(id));
   }, [dispatch, id, isEdit]);
-
+useEffect(() => {
+  api.get("/currencies/?is_active=true").then((r) => {
+    setCurrencies(Array.isArray(r.data) ? r.data : r.data.results || []);
+  });
+}, []);
   // useEffect(() => {
   //   if (isEdit && selected) {
   //     reset(selected);
@@ -114,6 +119,13 @@ export default function POFormPage() {
     if (selected.adjustment) setAdjustment(selected.adjustment);
   }
 }, [selected, isEdit, reset]);
+const currencyId = watch("currency");
+
+const currencyObj = currencies.find(
+  (c) => String(c.id) === String(currencyId)
+);
+
+const currencyCode = currencyObj?.code || "INR";
 
   // const onSubmit = async (data) => {
   //   const discPercent = discount.type === "%" ? +discount.value : 0;
@@ -240,13 +252,22 @@ export default function POFormPage() {
             </div>
             <div>
               <label style={Ls}>Currency</label>
-              <select style={Sl} {...reg("currency")}>
+              {/* <select style={Sl} {...reg("currency")}>
                 {CURRENCIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
                   </option>
                 ))}
-              </select>
+              </select> */}
+              <select style={Sl} {...reg("currency")}>
+  <option value="">Select Currency...</option>
+
+  {currencies.map((c) => (
+    <option key={c.id} value={c.id}>
+      {c.code} ({c.symbol})
+    </option>
+  ))}
+</select>
             </div>
             <div>
               <label style={Ls}>Notes</label>
@@ -257,7 +278,8 @@ export default function POFormPage() {
         <DocLineItems
           items={items}
           setItems={setItems}
-          currency={watch("currency") || "INR"}
+          // currency={watch("currency") || "INR"}
+          currency={currencyCode}
           discount={discount}
           setDiscount={setDiscount}
           adjustment={adjustment}

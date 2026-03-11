@@ -162,7 +162,8 @@ export default function ProformaListPage() {
       label: "Total",
       render: (v, row) => (
         <span style={{ fontWeight: 700 }}>
-          {row.currency || "INR"}{" "}
+          {/* {row.currency || "INR"}{" "} */}
+          {row.currency_symbol || row.currency_code || "INR"}{" "}
           {parseFloat(v || 0).toLocaleString("en-IN", {
             minimumFractionDigits: 2,
           })}

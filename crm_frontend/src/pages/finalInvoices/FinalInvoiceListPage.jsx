@@ -73,8 +73,7 @@ const STATS = [
   { value: "partial", label: "Partial" },
   { value: "overdue", label: "Overdue" },
   { value: "cancelled", label: "Cancelled" },
-   { value: "unpaid", label: "Unpaid" },
-
+  { value: "unpaid", label: "Unpaid" },
 ];
 const btnPri = {
   display: "inline-flex",
@@ -163,7 +162,8 @@ export default function FinalInvoiceListPage() {
       label: "Total",
       render: (v, row) => (
         <span style={{ fontWeight: 700 }}>
-          {row.currency || "INR"}{" "}
+          {/* {row.currency || "INR"}{" "} */}
+          {row.currency_symbol || row.currency_code || "INR"}{" "}
           {parseFloat(v || 0).toLocaleString("en-IN", {
             minimumFractionDigits: 2,
           })}

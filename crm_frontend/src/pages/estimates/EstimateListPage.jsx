@@ -153,7 +153,7 @@ export default function EstimateListPage() {
       render: (v) => (v ? new Date(v).toLocaleDateString() : "—"),
     },
     {
-      key: "due_date",
+      key: "valid_until",
       label: "Due",
       render: (v) => (v ? new Date(v).toLocaleDateString() : "—"),
     },
@@ -162,7 +162,8 @@ export default function EstimateListPage() {
       label: "Total",
       render: (v, row) => (
         <span style={{ fontWeight: 700 }}>
-          {row.currency || "INR"}{" "}
+          {/* {row.currency || "INR"}{" "} */}
+          {row.currency_symbol || row.currency_code || "INR"}{" "}
           {parseFloat(v || 0).toLocaleString("en-IN", {
             minimumFractionDigits: 2,
           })}

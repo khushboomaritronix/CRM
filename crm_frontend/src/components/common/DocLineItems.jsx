@@ -20,6 +20,7 @@ export default function DocLineItems({
   setDiscount,
   adjustment,
   setAdjustment,
+  showHSN = false,
 }) {
   const update = (idx, field, val) =>
     setItems((prev) =>
@@ -124,6 +125,8 @@ export default function DocLineItems({
             <tr style={{ background: "#F8FAFC" }}>
               <th style={th("left", 130)}>#&nbsp;Item</th>
               <th style={th("left")}>Description</th>
+              {/* <th style={th("right", 70)}>HSN/SAC</th> */}
+              {showHSN && <th style={th("right", 70)}>HSN/SAC</th>}
               <th style={th("right", 70)}>Qty</th>
               <th style={th("left", 60)}>Unit</th>
               <th style={th("right", 105)}>Rate</th>
@@ -151,6 +154,25 @@ export default function DocLineItems({
                     placeholder="Long description"
                   />
                 </td>
+                {/* <td style={td("right")}>
+                  <input
+                    style={{ ...S_inp, textAlign: "right", minWidth: 100 }}
+                    value={item.HSN_SAC_code || ""}
+                    onChange={(e) => update(idx, "HSN_SAC_code", e.target.value)}
+                    placeholder="HSN/SAC"
+                  />
+                </td> */}
+                {showHSN && (
+  <td style={td("right")}>
+    <input
+      style={{ ...S_inp, textAlign: "right", minWidth: 100 }}
+      value={item.HSN_SAC_code || ""}
+      onChange={(e) => update(idx, "HSN_SAC_code", e.target.value)}
+      placeholder="HSN/SAC"
+    />
+  </td>
+)}
+                
                 <td style={td("right")}>
                   <input
                     style={{ ...S_inp, textAlign: "right" }}

@@ -50,7 +50,7 @@ const Is = {
 const Sl = { ...Is, background: "#fff" };
 const Ta = { ...Is, resize: "vertical" };
 const STATS = ["draft", "sent", "paid", "partial", "overdue", "cancelled", "unpaid"];
-const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "JPY"];
+// const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "JPY"];
 
 export default function EstimateFormPage() {
   const dispatch = useDispatch();
@@ -59,13 +59,14 @@ export default function EstimateFormPage() {
   const isEdit = !!id;
   const selected = useSelector(selectSelected);
   const submitting = useSelector(selectSubmitting);
+  const [currencies, setCurrencies] = useState([]);
   const {
     register: reg,
     handleSubmit,
     reset,
     watch,
     formState: { errors: e },
-  } = useForm({ defaultValues: { currency: "INR", status: "draft", custom_field_values: {}, } });
+  } = useForm({ defaultValues: { currency: "", status: "draft", custom_field_values: {}, } });
   const [customers, setCustomers] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [items, setItems] = useState([
@@ -91,7 +92,11 @@ export default function EstimateFormPage() {
       );
     if (isEdit) dispatch(fetchOneEstimates(id));
   }, [dispatch, id, isEdit]);
-
+useEffect(() => {
+  api.get("/currencies/?is_active=true").then((r) => {
+    setCurrencies(Array.isArray(r.data) ? r.data : r.data.results || []);
+  });
+}, []);
   useEffect(() => {
     if (watchedCustomer) {
       const c = customers.find((x) => String(x.id) === String(watchedCustomer));
@@ -151,6 +156,13 @@ export default function EstimateFormPage() {
   //       );
   //   if (!res.error) navigate("/estimates");
   // };
+  const currencyId = watch("currency");
+
+const currencyObj = currencies.find(
+  (c) => String(c.id) === String(currencyId)
+);
+
+const currencyCode = currencyObj?.code || "INR";
   const onSubmit = async (data) => {
   const discPercent = discount.type === "%" ? +discount.value : 0;
   const discAmount = discount.type === "flat" ? +discount.value : 0;
@@ -244,13 +256,22 @@ export default function EstimateFormPage() {
             </div>
             <div>
               <label style={Ls}>Currency</label>
-              <select style={Sl} {...reg("currency")}>
+              {/* <select style={Sl} {...reg("currency")}>
                 {CURRENCIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
                   </option>
                 ))}
-              </select>
+              </select> */}
+              <select style={Sl} {...reg("currency")}>
+  <option value="">Select Currency...</option>
+
+  {currencies.map((c) => (
+    <option key={c.id} value={c.id}>
+      {c.code} ({c.symbol})
+    </option>
+  ))}
+</select>
             </div>
             <div>
               <label style={Ls}>Reference</label>
@@ -262,7 +283,9 @@ export default function EstimateFormPage() {
         <DocLineItems
           items={items}
           setItems={setItems}
-          currency={watch("currency") || "INR"}
+          // currency={watch("currency") || "INR"}
+          //  currency={selectedCurrency?.symbol || "₹"}
+          currency={currencyCode}
           discount={discount}
           setDiscount={setDiscount}
           adjustment={adjustment}

@@ -30,7 +30,12 @@ class BaseDocument(TimeStampedModel, CustomFieldValueMixin):
     tax_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     paid_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
-    currency = models.CharField(max_length=3, default="INR")
+    # currency = models.CharField(max_length=3, default="INR")
+    currency = models.ForeignKey(
+    "currencies.Currency",
+    on_delete=models.PROTECT,
+    related_name="%(class)s_documents"
+)
     # Customer PO reference (which customer PO triggered this document)
     po_reference = models.CharField(max_length=100, blank=True)
     # Adjustment amount (positive or negative manual adjustment)
@@ -68,7 +73,7 @@ class BaseDocumentItem(models.Model):
     tax_percent = models.DecimalField(max_digits=5, decimal_places=2, default=0)
     amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     order = models.PositiveIntegerField(default=0)
-
+    HSN_SAC_code = models.CharField(max_length=90, blank=True)
     class Meta:
         abstract = True
         ordering = ["order"]
@@ -142,7 +147,12 @@ class PurchaseOrder(TimeStampedModel, CustomFieldValueMixin):
     subtotal = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     tax_amount = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=14, decimal_places=2, default=0)
-    currency = models.CharField(max_length=3, default="INR")
+    # currency = models.CharField(max_length=3, default="INR")
+    currency = models.ForeignKey(
+    "currencies.Currency",
+    on_delete=models.PROTECT,
+    related_name="%(class)s_documents"
+)
     # Customer PO reference (which customer PO triggered this document)
     po_reference = models.CharField(max_length=100, blank=True)
     # Adjustment amount (positive or negative manual adjustment)
@@ -185,6 +195,8 @@ class FinalInvoice(BaseDocument):
     proforma = models.ForeignKey(
         ProformaInvoice, on_delete=models.SET_NULL, null=True, blank=True, related_name="final_invoices"
     )
+    
+  
 
     class Meta:
         ordering = ["-created_at"]
@@ -195,3 +207,4 @@ class FinalInvoice(BaseDocument):
 
 class FinalInvoiceItem(BaseDocumentItem):
     final_invoice = models.ForeignKey(FinalInvoice, on_delete=models.CASCADE, related_name="items")
+    # HSN_SAC_code = models.CharField(max_length=900, blank=True)

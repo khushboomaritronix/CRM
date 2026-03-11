@@ -2,6 +2,7 @@ from decimal import Decimal
 from django.db import models
 from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 from apps.vendors.models import Vendor
+from apps.currencies.models import Currency
 
 
 class RFQ(TimeStampedModel, CustomFieldValueMixin):
@@ -14,6 +15,15 @@ class RFQ(TimeStampedModel, CustomFieldValueMixin):
 
     rfq_number = models.CharField(max_length=50, unique=True)
     vendor = models.ForeignKey(Vendor, on_delete=models.PROTECT, related_name="rfqs")
+    currency = models.ForeignKey(
+    Currency,
+    on_delete=models.PROTECT,
+    related_name="rfqs",
+    null=True,
+    blank=True
+)
+
+    
     date = models.DateField()
     due_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
@@ -49,7 +59,7 @@ class RFQ(TimeStampedModel, CustomFieldValueMixin):
 class RFQItem(models.Model):
     rfq = models.ForeignKey(RFQ, on_delete=models.CASCADE, related_name="items")
     item_name = models.CharField(max_length=200, blank=True)
-    description = models.CharField(max_length=500)
+    description = models.CharField(max_length=500, blank=True)
     quantity = models.DecimalField(max_digits=12, decimal_places=3)
     unit = models.CharField(max_length=30, blank=True)
     unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0)

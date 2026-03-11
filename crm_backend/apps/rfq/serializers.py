@@ -11,6 +11,8 @@ class RFQItemSerializer(serializers.ModelSerializer):
 class RFQSerializer(serializers.ModelSerializer):
     items = RFQItemSerializer(many=True, required=False)
     vendor_name = serializers.ReadOnlyField(source="vendor.name")
+    currency_code = serializers.CharField(source="currency.code", read_only=True)
+    currency_symbol = serializers.CharField(source="currency.symbol", read_only=True)
 
     class Meta:
         model = RFQ
