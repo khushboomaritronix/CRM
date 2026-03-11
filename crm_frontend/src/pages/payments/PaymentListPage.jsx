@@ -169,7 +169,7 @@ export default function PaymentListPage() {
             color: row.payment_type === "received" ? "#276749" : "#2C5282",
           }}
         >
-          {row.currency || "INR"}{" "}
+                   {row.currency_symbol || row.currency_code || "INR"}{" "}
           {parseFloat(v || 0).toLocaleString("en-IN", {
             minimumFractionDigits: 2,
           })}
@@ -305,7 +305,7 @@ export default function PaymentListPage() {
               TOTAL PAID OUT
             </div>
             <div style={{ fontSize: 20, fontWeight: 800, color: "#2C5282" }}>
-              INR{" "}
+              
               {totalMade.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
             </div>
           </div>

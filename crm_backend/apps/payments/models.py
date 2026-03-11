@@ -2,6 +2,7 @@ from django.db import models
 from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 from apps.customers.models import Customer
 from apps.vendors.models import Vendor
+from apps.invoices.models import FinalInvoice, ProformaInvoice
 
 PAYMENT_TYPE = [
     ("received", "Payment Received"),
@@ -32,12 +33,29 @@ class Payment(TimeStampedModel, CustomFieldValueMixin):
     payment_method = models.CharField(max_length=30, choices=PAYMENT_METHOD, default="bank_transfer")
     payment_date = models.DateField()
     amount = models.DecimalField(max_digits=14, decimal_places=2)
-    currency = models.CharField(max_length=3, default="INR")
+    # currency = models.CharField(max_length=3, default="INR")
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default="completed")
 
     # Payer/Payee — only one of these will be set
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True, related_name="payments")
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True, related_name="payments")
+    proforma = models.ForeignKey(
+    ProformaInvoice,
+    null=True,
+    blank=True,
+    related_name="payments",
+    on_delete=models.SET_NULL
+)
+    
+    currency = models.ForeignKey("currencies.Currency", on_delete=models.SET_NULL, null=True, blank=True) 
+    finalinvoice = models.ForeignKey(
+    FinalInvoice,
+    null=True,
+    blank=True,
+    related_name="payments",
+    on_delete=models.SET_NULL
+)  
+
 
     # Reference to invoice
     invoice_ref = models.CharField(max_length=100, blank=True, help_text="Invoice/PO number this payment is for")
