@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -36,9 +36,45 @@ import {
   DollarSign,
   BarChart2,
   Inbox,
+  Truck,
+  Package,
+  TrendingUp,
+  Layers,
 } from "lucide-react";
+import api from "../../services/api";
 
-const NAV_ITEMS = [
+// Icon mapping for module display
+const ICON_MAP = {
+  "LayoutDashboard": LayoutDashboard,
+  "Users": Users,
+  "Building2": Building2,
+  "FileSearch": FileSearch,
+  "FileText": FileText,
+  "Receipt": Receipt,
+  "FileOutput": FileOutput,
+  "ShoppingCart": ShoppingCart,
+  "CheckSquare": CheckSquare,
+  "Settings": Settings,
+  "FileType": FileType,
+  "UserCog": UserCog,
+  "Shield": Shield,
+  "Sliders": Sliders,
+  "Database": Database,
+  "FileMinus": FileMinus,
+  "FilePlus": FilePlus,
+  "CreditCard": CreditCard,
+  "RotateCcw": RotateCcw,
+  "DollarSign": DollarSign,
+  "BarChart2": BarChart2,
+  "Inbox": Inbox,
+  "Truck": Truck,
+  "Package": Package,
+  "TrendingUp": TrendingUp,
+  "Layers": Layers,
+};
+
+// Fallback hardcoded sidebar in case API fails
+const FALLBACK_NAV_ITEMS = [
   {
     label: "Dashboard",
     path: "/dashboard",
@@ -46,113 +82,88 @@ const NAV_ITEMS = [
     module: "dashboard",
   },
   { label: "Customers", path: "/customers", icon: Users, module: "customers" },
-  {
-    label: "Customer POs",
-    path: "/customer-pos",
-    icon: Inbox,
-    module: "customer_pos",
-  },
   { label: "Vendors", path: "/vendors", icon: Building2, module: "vendors" },
-  { label: "RFQ", path: "/rfq", icon: FileSearch, module: "rfq" },
-  {
-    label: "Estimate",
-    path: "/estimates",
-    icon: FileText,
-    module: "estimates",
-  },
-  // { label: "Invoices", path: "/invoices", icon: Receipt, module: "invoices" },
-  {
-    label: "Proforma Invoices",
-    path: "/proforma-invoices",
-    icon: FileOutput,
-    module: "proforma_invoices",
-  },
-  {
-    label: "Purchase Orders",
-    path: "/purchase-orders",
-    icon: ShoppingCart,
-    module: "purchase_orders",
-  },
-  {
-    label: "Final Invoices",
-    path: "/final-invoices",
-    icon: CheckSquare,
-    module: "final_invoices",
-  },
-  null, // divider — Finance
-  {
-    label: "Credit Notes",
-    path: "/credit-notes",
-    icon: FileMinus,
-    module: "credit_notes",
-  },
-  {
-    label: "Debit Notes",
-    path: "/debit-notes",
-    icon: FilePlus,
-    module: "debit_notes",
-  },
-  {
-    label: "Payments",
-    path: "/payments",
-    icon: CreditCard,
-    module: "payments",
-  },
-  {
-    label: "Order Returns",
-    path: "/order-returns",
-    icon: RotateCcw,
-    module: "order_returns",
-  },
-  {
-    label: "Currencies",
-    path: "/currencies",
-    icon: DollarSign,
-    module: "currencies",
-  },
-  { label: "Reports", path: "/reports", icon: BarChart2, module: "reports" },
-  null, // divider — Admin
-  { label: "Users", path: "/users", icon: UserCog, module: "users" },
-  { label: "Roles", path: "/roles", icon: Shield, module: "roles" },
-  {
-    label: "Custom Fields",
-    path: "/custom-fields",
-    icon: Sliders,
-    module: "custom_fields",
-  },
-  {
-    label: "PDF Templates",
-    path: "/pdf-templates",
-    icon: FileType,
-    module: "pdf_templates",
-  },
-  {
-    label: "Bulk Operations",
-    path: "/bulk-operations",
-    icon: Database,
-    module: "bulk_operations",
-  },
-  {
-    label: "Company Settings",
-    path: "/company",
-    icon: Settings,
-    module: "company",
-  },
+  { label: "Settings", path: "/company", icon: Settings, module: "company" },
 ];
 
 export default function AppLayout({ children }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [modules, setModules] = useState([]);
+  const [loadingModules, setLoadingModules] = useState(true);
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector(selectCurrentUser);
   const permissions = useSelector(selectPermissions);
 
-  const hasAccess = (module) => {
-    if (!module) return true;
+  // Fetch modules from API dynamically
+  useEffect(() => {
+    const fetchModules = async () => {
+      try {
+        const res = await api.get("/modules/?is_active=true&page_size=100");
+        const data = Array.isArray(res.data) ? res.data : res.data.results || [];
+        setModules(data.sort((a, b) => (a.order || 0) - (b.order || 0)));
+      } catch (err) {
+        console.error("Failed to load modules:", err);
+        setModules([]);
+      } finally {
+        setLoadingModules(false);
+      }
+    };
+    fetchModules();
+  }, []);
+
+  // Build navigation items from modules
+  const navItems = useMemo(() => {
+    if (modules.length === 0) return FALLBACK_NAV_ITEMS;
+
+    return modules.map((module) => {
+      const iconName = module.icon || "Package";
+      const IconComponent = ICON_MAP[iconName] || Package;
+      
+      // Map slug to path
+      const pathMap = {
+        dashboard: "/dashboard",
+        customers: "/customers",
+        vendors: "/vendors",
+        rfq: "/rfq",
+        estimates: "/estimates",
+        invoices: "/invoices",
+        proforma_invoices: "/proforma-invoices",
+        purchase_orders: "/purchase-orders",
+        final_invoices: "/final-invoices",
+        delivery_notes: "/delivery-notes",
+        credit_notes: "/credit-notes",
+        debit_notes: "/debit-notes",
+        payments: "/payments",
+        order_returns: "/order-returns",
+        currencies: "/currencies",
+        reports: "/reports",
+        company: "/company",
+        pdf_templates: "/pdf-templates",
+        users: "/users",
+        roles: "/roles",
+        custom_fields: "/custom-fields",
+        bulk_operations: "/bulk-operations",
+        customer_pos: "/customer-pos",
+        modules: "/modules",
+      };
+
+      return {
+        label: module.name,
+        path: pathMap[module.slug] || `/${module.slug}`,
+        icon: IconComponent,
+        module: module.slug,
+        slug: module.slug,
+      };
+    });
+  }, [modules]);
+
+  const hasAccess = (moduleSlug) => {
+    if (!moduleSlug) return true;
     if (user?.is_superuser) return true;
-    return permissions?.[module]?.includes("can_view");
+    return permissions?.[moduleSlug]?.includes("can_view");
   };
 
   const handleLogout = async () => {
@@ -181,7 +192,7 @@ export default function AppLayout({ children }) {
 
       {/* Navigation */}
       <nav className="sidebar-nav">
-        {NAV_ITEMS.map((item, idx) => {
+        {navItems.map((item, idx) => {
           if (!item) return <div key={idx} className="nav-divider" />;
           if (!hasAccess(item.module)) return null;
 

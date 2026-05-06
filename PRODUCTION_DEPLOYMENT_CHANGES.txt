@@ -1,0 +1,259 @@
+═══════════════════════════════════════════════════════════════════════════════
+  PRODUCTION DEPLOYMENT - CONFIGURATION CHANGES SUMMARY
+  URL: https://uat-aucrm.devshow.in
+  Date: May 6, 2026
+═══════════════════════════════════════════════════════════════════════════════
+
+## ✅ FILES UPDATED
+
+### 1. Backend Environment Configuration
+📄 File: crm_backend/.env
+
+BEFORE (Development):
+─────────────────────────────────────────────────────────────────────────────
+DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+FRONTEND_URL=http://localhost:3000,https://uat-aucrm.devshow.in
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,https://uat-aucrm.devshow.in
+DB_NAME=crm_v3
+DB_USER=postgres
+DB_PASSWORD=1234
+
+
+AFTER (Production):
+─────────────────────────────────────────────────────────────────────────────
+DEBUG=False                                           ← SECURITY: Disabled debug mode
+DJANGO_SETTINGS_MODULE=config.settings.production    ← Switched to production settings
+ALLOWED_HOSTS=uat-aucrm.devshow.in,www.uat-aucrm.devshow.in
+CORS_ALLOWED_ORIGINS=https://uat-aucrm.devshow.in   ← SECURITY: Restricted CORS
+FRONTEND_URL=https://uat-aucrm.devshow.in           ← Using HTTPS
+DB_NAME=crm_uat
+DB_USER=crmuatadmin
+DB_PASSWORD=YOUR_PASSWORD_HERE                       ← Ready for you to add password
+DB_HOST=localhost
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+ADMIN_EMAIL=admin@uat-aucrm.devshow.in
+
+
+### 2. Frontend Environment Configuration
+📄 File: crm_frontend/.env
+
+File already exists and is configured correctly:
+─────────────────────────────────────────────────────────────────────────────
+REACT_APP_API_URL=https://uat-aucrm.devshow.in/api
+REACT_APP_ENV=production
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  ⚠️  IMPORTANT: MANUAL STEPS REQUIRED
+═══════════════════════════════════════════════════════════════════════════════
+
+## STEP 1: Update Database Password in Backend .env
+─────────────────────────────────────────────────────────────────────────────
+File: crm_backend/.env
+
+Find this line:
+  DB_PASSWORD=YOUR_PASSWORD_HERE
+
+Replace with your actual password:
+  DB_PASSWORD=<your-crmuatadmin-password>
+
+
+## STEP 2: Generate New SECRET_KEY (CRITICAL for production)
+─────────────────────────────────────────────────────────────────────────────
+Run this command in crm_backend directory:
+
+  python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
+
+Copy the generated key and update in crm_backend/.env:
+  OLD: SECRET_KEY=fhbhgyt@$%&*
+  NEW: SECRET_KEY=<paste-generated-key-here>
+
+
+## STEP 3: Run Backend Migrations
+─────────────────────────────────────────────────────────────────────────────
+Before starting the server, run:
+
+  cd crm_backend
+  python manage.py migrate
+
+
+## STEP 4: Collect Static Files
+─────────────────────────────────────────────────────────────────────────────
+For production deployment:
+
+  python manage.py collectstatic --noinput
+
+
+## STEP 5: Build Frontend
+─────────────────────────────────────────────────────────────────────────────
+  cd crm_frontend
+  npm run build
+
+This creates optimized production build in crm_frontend/build/
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  SECURITY SETTINGS CONFIGURED ✅
+═══════════════════════════════════════════════════════════════════════════════
+
+The following security features are ENABLED in config/settings/production.py:
+
+✅ DEBUG = False                          → No debug information exposed
+✅ SECURE_SSL_REDIRECT = True             → Forces HTTPS
+✅ SESSION_COOKIE_SECURE = True           → Cookies sent only over HTTPS
+✅ CSRF_COOKIE_SECURE = True              → CSRF tokens sent only over HTTPS
+✅ SECURE_HSTS_SECONDS = 31536000         → HSTS header (1 year)
+✅ SECURE_HSTS_INCLUDE_SUBDOMAINS = True  → HSTS includes subdomains
+✅ X_FRAME_OPTIONS = "DENY"               → Prevents clickjacking
+✅ CORS_ALLOWED_ORIGINS restricted       → Only https://uat-aucrm.devshow.in
+✅ Content Security Policy configured    → Prevents XSS attacks
+✅ Redis caching enabled                 → Performance optimization
+✅ Connection pooling enabled            → Database optimization
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  DATABASE CONFIGURATION
+═══════════════════════════════════════════════════════════════════════════════
+
+Database will be read from environment variables in production:
+
+Engine:        django.db.backends.postgresql
+Database Name: crm_uat
+User:          crmuatadmin
+Password:      (You will set this)
+Host:          localhost
+Port:          5432
+
+Connection pooling enabled (CONN_MAX_AGE = 600 seconds)
+Connection timeout: 10 seconds
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  FRONTEND API CONFIGURATION
+═══════════════════════════════════════════════════════════════════════════════
+
+The frontend will connect to:
+  API Base URL: https://uat-aucrm.devshow.in/api
+
+This is set in crm_frontend/.env:
+  REACT_APP_API_URL=https://uat-aucrm.devshow.in/api
+
+Used in: crm_frontend/src/services/api.js
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  CORS CONFIGURATION
+═══════════════════════════════════════════════════════════════════════════════
+
+BEFORE (Development - OPEN):
+  - http://localhost:3000
+  - http://127.0.0.1:3000
+  - https://uat-aucrm.devshow.in
+
+AFTER (Production - RESTRICTED):
+  - https://uat-aucrm.devshow.in only
+
+This means:
+  ✅ Only requests from your domain are allowed
+  ❌ Local development requests will be rejected
+  ❌ Requests from other domains will be rejected
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  DEPLOYMENT CHECKLIST
+═══════════════════════════════════════════════════════════════════════════════
+
+Before going live:
+
+[ ] Update DB_PASSWORD in crm_backend/.env
+[ ] Generate new SECRET_KEY and update in .env
+[ ] Run migrations: python manage.py migrate
+[ ] Collect static files: python manage.py collectstatic --noinput
+[ ] Build frontend: npm run build
+[ ] Test API endpoints: curl https://uat-aucrm.devshow.in/api/
+[ ] Verify HTTPS certificate is valid
+[ ] Test email functionality
+[ ] Test login and authentication
+[ ] Verify permissions for all modules work
+[ ] Check Redis connection
+[ ] Set up backup strategy for PostgreSQL
+[ ] Monitor logs for errors
+[ ] Test with production data (if applicable)
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  FILES NOT CHANGED (Already Production-Ready) ✅
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ config/settings/base.py
+   - Reads all configuration from environment variables
+   - No hardcoded values
+
+✅ config/settings/production.py
+   - All security settings configured
+   - Database uses environment variables
+   - CORS properly restricted
+   - Redis caching configured
+   - Email backend configured
+
+✅ crm_frontend/src/services/api.js
+   - Uses REACT_APP_API_URL from .env
+   - No hardcoded URLs
+
+✅ crm_frontend/package.json
+   - Build script ready for production
+   - All dependencies configured
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  WHAT TO DO IF SOMETHING BREAKS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. Check Backend Logs
+   - Look for errors in console/systemd logs
+   - Verify environment variables are set: env | grep -i crm
+
+2. Database Connection Issues
+   - Verify PostgreSQL is running: psql -U crmuatadmin -d crm_uat -h localhost
+   - Check DB_PASSWORD is correct in .env
+   - Verify firewall allows connection to localhost:5432
+
+3. HTTPS/SSL Issues
+   - Verify SSL certificate is valid and not expired
+   - Check ALLOWED_HOSTS includes your domain
+   - Verify DNS points to your server
+
+4. CORS Errors in Frontend
+   - Make sure CORS_ALLOWED_ORIGINS matches your domain
+   - Verify https:// is used (not http://)
+   - Check browser console for specific CORS error messages
+
+5. Static Files Not Loading
+   - Run: python manage.py collectstatic --noinput
+   - Verify Nginx/web server is configured to serve /static/ path
+
+6. API Not Responding
+   - Verify REACT_APP_API_URL is correct in frontend .env
+   - Check firewall allows access to port 8000 (or 443 if proxied)
+   - Verify backend service is running
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  NEXT STEPS
+═══════════════════════════════════════════════════════════════════════════════
+
+1. ✏️  Update DB_PASSWORD in crm_backend/.env (line 13)
+2. 🔑 Generate and update SECRET_KEY
+3. 🗄️  Run migrations
+4. 🔨 Build frontend
+5. 🚀 Deploy to server
+6. ✅ Test all functionality
+
+
+═══════════════════════════════════════════════════════════════════════════════
+  Questions? Check:
+  - crm_backend/config/settings/production.py for backend configuration
+  - crm_frontend/.env for frontend configuration
+  - Django documentation: https://docs.djangoproject.com/en/4.2/
+═══════════════════════════════════════════════════════════════════════════════

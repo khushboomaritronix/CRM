@@ -36,6 +36,7 @@ urlpatterns = [
     path("api/proforma-invoices/", include("apps.proforma_invoices.urls")),
     path("api/purchase-orders/", include("apps.purchase_orders.urls")),
     path("api/final-invoices/", include("apps.final_invoices.urls")),
+    path("api/delivery-notes/", include("apps.delivery_notes.urls")),
 
     # New Modules
     path("api/credit-notes/", include("apps.credit_notes.urls")),

@@ -2,7 +2,7 @@ import axios from "axios";
 import { store } from "../app/store";
 import { logout, setCredentials } from "../features/auth/authSlice";
 
-const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+const BASE_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api" || "https://uat-aucrm.devshow.in/";
 
 const api = axios.create({
   baseURL: BASE_URL,

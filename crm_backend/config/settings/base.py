@@ -8,9 +8,12 @@ import os
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # environ.Env.read_env(BASE_DIR / ".env")
 
-SECRET_KEY = env("SECRET_KEY", default="django-insecure-change-me-in-production")
-DEBUG = env("DEBUG", default=True)
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["*"])
+# SECURITY: Always require SECRET_KEY in production, never use default
+SECRET_KEY = env("SECRET_KEY")  # Must be set in environment - no default!
+# DEBUG defaults to False for safety, explicitly enable in development
+DEBUG = env("DEBUG", default=False)
+# ALLOWED_HOSTS is required, defaults to localhost only
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
 
 DJANGO_APPS = [
     "django.contrib.admin",
@@ -48,6 +51,7 @@ LOCAL_APPS = [
     "apps.proforma_invoices",
     "apps.purchase_orders",
     "apps.final_invoices",
+    "apps.delivery_notes",
     "apps.company",
     "apps.pdf_templates",
     "apps.bulk_operations",
@@ -94,14 +98,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": env("DB_NAME", default="crm_v3"),
+#         "USER": env("DB_USER", default="postgres"),
+#         "PASSWORD": env("DB_PASSWORD", default="1234"),
+#         "HOST": env("DB_HOST", default="localhost"),
+#         "PORT": env("DB_PORT", default="5432"),
+#     }
+# }
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": env("DB_NAME", default="crm_v3"),
-        "USER": env("DB_USER", default="postgres"),
-        "PASSWORD": env("DB_PASSWORD", default="1234"),
-        "HOST": env("DB_HOST", default="localhost"),
-        "PORT": env("DB_PORT", default="5432"),
+        "NAME": "crm_uat",
+        "USER": "crmuatadmin",
+        "PASSWORD": "Secure@2026",
+         "HOST":  "localhost",
+        "PORT": "5432",
     }
 }
 

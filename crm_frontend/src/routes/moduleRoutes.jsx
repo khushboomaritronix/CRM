@@ -39,6 +39,13 @@ const POFormPage             = lazy(() => import("../pages/purchaseOrders/POForm
 const FinalInvoiceListPage  = lazy(() => import("../pages/finalInvoices/FinalInvoiceListPage"));
 const FinalInvoiceFormPage  = lazy(() => import("../pages/finalInvoices/FinalInvoiceFormPage"));
 
+// Delivery Notes
+const DeliveryNoteListPage  = lazy(() => import("../pages/deliveryNotes/DeliveryNoteListPage"));
+const DeliveryNoteFormPage  = lazy(() => import("../pages/deliveryNotes/DeliveryNoteFormPage"));
+
+// Modules Management
+const ModulesPage           = lazy(() => import("../pages/modules/ModulesPage"));
+
 // ─── NEW modules ─────────────────────────────────────────────
 const CreditNoteListPage    = lazy(() => import("../pages/creditNotes/CreditNoteListPage"));
 const CreditNoteFormPage    = lazy(() => import("../pages/creditNotes/CreditNoteFormPage"));
@@ -113,6 +120,11 @@ export const moduleRoutes = [
   { path: "/final-invoices/new",           element: <FinalInvoiceFormPage />,   module: "final_invoices",    requiredPermission: "can_create" },
   { path: "/final-invoices/:id/edit",      element: <FinalInvoiceFormPage />,   module: "final_invoices",    requiredPermission: "can_update" },
 
+  // Delivery Notes
+  { path: "/delivery-notes",               element: <DeliveryNoteListPage />,   module: "delivery_notes",    requiredPermission: "can_view" },
+  { path: "/delivery-notes/new",           element: <DeliveryNoteFormPage />,   module: "delivery_notes",    requiredPermission: "can_create" },
+  { path: "/delivery-notes/:id/edit",      element: <DeliveryNoteFormPage />,   module: "delivery_notes",    requiredPermission: "can_update" },
+
   // ─── NEW ──────────────────────────────────────────────────
   // Credit Notes
   { path: "/credit-notes",                 element: <CreditNoteListPage />,     module: "credit_notes",      requiredPermission: "can_view" },
@@ -150,6 +162,7 @@ export const moduleRoutes = [
   { path: "/users/:id/edit",              element: <UserFormPage />,           module: "users",             requiredPermission: "can_update" },
   { path: "/roles",                        element: <RoleListPage />,           module: "roles",             requiredPermission: "can_view" },
   { path: "/roles/:id",                    element: <RoleDetailPage />,         module: "roles",             requiredPermission: "can_view" },
+  { path: "/modules",                      element: <ModulesPage />,            module: "modules",           requiredPermission: "can_view" },
   { path: "/custom-fields",               element: <CustomFieldsPage />,       module: "custom_fields",     requiredPermission: "can_view" },
   { path: "/bulk-operations",              element: <BulkOperationsPage />,     module: "bulk_operations",   requiredPermission: "can_view" },
 ];
