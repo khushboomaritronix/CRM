@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Pencil from "@mui/icons-material/Edit"; // was lucide Pencil
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
 import { fetchCurrencies, createCurrencies, updateCurrencies, deleteCurrencies, selectList, selectLoading } from "../../features/currencies/currenciesSlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable from "../../components/common/DataTable";
 
@@ -13,6 +16,9 @@ const DEF={code:"",name:"",symbol:"",exchange_rate:1,is_base:false,is_active:tru
 export default function CurrenciesPage() {
   const dispatch=useDispatch();
   const list=useSelector(selectList); const loading=useSelector(selectLoading);
+  const canCreate=useSelector(selectHasPermission("currencies","can_create"));
+  const canUpdate=useSelector(selectHasPermission("currencies","can_update"));
+  const canDelete=useSelector(selectHasPermission("currencies","can_delete"));
   const[showForm,setShowForm]=useState(false);
   const[form,setForm]=useState({...DEF});
   const[editing,setEditing]=useState(null);
@@ -43,10 +49,12 @@ export default function CurrenciesPage() {
       <PageHeader title="Currencies" subtitle="Manage currencies and exchange rates"
         breadcrumbs={[{label:"Dashboard",path:"/dashboard"},{label:"Currencies"}]}
         actions={
-          <button onClick={()=>{setShowForm(!showForm);if(showForm){setEditing(null);setForm({...DEF});}}}
-            style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 16px",background:"#2E86AB",color:"#fff",borderRadius:8,fontWeight:600,fontSize:13.5,border:"none",cursor:"pointer"}}>
-            <Plus size={14}/> {showForm?"Cancel":"Add Currency"}
-          </button>
+          canCreate && (
+            <button onClick={()=>{setShowForm(!showForm);if(showForm){setEditing(null);setForm({...DEF});}}}
+              style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 16px",background:"#2E86AB",color:"#fff",borderRadius:8,fontWeight:600,fontSize:13.5,border:"none",cursor:"pointer"}}>
+              <Plus size={14}/> {showForm?"Cancel":"Add Currency"}
+            </button>
+          )
         }
       />
 
@@ -95,8 +103,8 @@ export default function CurrenciesPage() {
       <DataTable columns={columns} data={list} loading={loading} emptyMessage="No currencies configured. Add INR, USD, EUR etc."
         actions={row=>(
           <div style={{display:"flex",gap:4}}>
-            <button onClick={()=>startEdit(row)} style={{background:"none",border:"1px solid #E2E8F0",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Pencil size={13}/></button>
-            <button onClick={()=>window.confirm("Delete this currency?")&&dispatch(deleteCurrencies(row.id))} style={{background:"none",border:"1px solid #FEB2B2",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#E53E3E"}}><Trash2 size={13}/></button>
+            {canUpdate && <button onClick={()=>startEdit(row)} style={{background:"none",border:"1px solid #E2E8F0",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Pencil size={13}/></button>}
+            {canDelete && <button onClick={()=>window.confirm("Delete this currency?")&&dispatch(deleteCurrencies(row.id))} style={{background:"none",border:"1px solid #FEB2B2",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#E53E3E"}}><Trash2 size={13}/></button>}
           </div>
         )}
       />

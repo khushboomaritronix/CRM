@@ -4,7 +4,14 @@ import { useParams, Link, useNavigate } from "react-router-dom";
 import { fetchOneCustomers, deleteCustomers, selectSelected, selectLoading } from "../../features/customers/customersSlice";
 import PageHeader from "../../components/common/PageHeader";
 import { Badge } from "../../components/common/DataTable";
-import { Pencil, Trash2, ArrowLeft, Phone, Mail, Globe, MapPin, FileText } from "lucide-react";
+import Pencil from "@mui/icons-material/Edit"; // was lucide Pencil
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+import ArrowLeft from "@mui/icons-material/ArrowBack"; // was lucide ArrowLeft
+import Phone from "@mui/icons-material/Phone";
+import Mail from "@mui/icons-material/Email"; // was lucide Mail
+import Globe from "@mui/icons-material/Public"; // was lucide Globe
+import MapPin from "@mui/icons-material/LocationOn"; // was lucide MapPin
+import FileText from "@mui/icons-material/Description"; // was lucide FileText
 
 const Row=({label,value})=>value?(
   <div style={{display:"flex",gap:16,padding:"11px 0",borderBottom:"1px solid #F3F4F6"}}>

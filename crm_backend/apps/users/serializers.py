@@ -10,6 +10,23 @@ def generate_password(length=12):
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
 
+def get_user_permissions_dict(user):
+    """Build the {module_slug: [permission_codenames]} map for a user's active roles."""
+    from apps.role_user.models import RoleUser
+    from apps.role_permission.models import RolePermission
+
+    role_ids = RoleUser.objects.filter(user=user, role__is_active=True).values_list("role_id", flat=True)
+    perms = RolePermission.objects.filter(role_id__in=role_ids).select_related("module", "permission")
+
+    permissions = {}
+    for p in perms:
+        slug = p.module.slug
+        if slug not in permissions:
+            permissions[slug] = []
+        permissions[slug].append(p.permission.codename)
+    return permissions
+
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     username_field = "email"
 
@@ -17,21 +34,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         user = self.user
 
-        from apps.role_user.models import RoleUser
-        from apps.role_permission.models import RolePermission
-
-        role_ids = RoleUser.objects.filter(user=user, role__is_active=True).values_list("role_id", flat=True)
-        perms = RolePermission.objects.filter(role_id__in=role_ids).select_related("module", "permission")
-
-        permissions = {}
-        for p in perms:
-            slug = p.module.slug
-            if slug not in permissions:
-                permissions[slug] = []
-            permissions[slug].append(p.permission.codename)
-
         data["user"] = UserDetailSerializer(user).data
-        data["permissions"] = permissions
+        data["permissions"] = get_user_permissions_dict(user)
         return data
 
 
@@ -83,7 +87,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["email", "username", "first_name", "last_name", "phone", "is_active", "is_staff", "role_ids"]
+        fields = ["id", "email", "username", "first_name", "last_name", "phone", "is_active", "is_staff", "role_ids"]
 
     def create(self, validated_data):
         role_ids = validated_data.pop("role_ids", [])
@@ -113,7 +117,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "phone", "is_active", "is_staff", "role_ids"]
+        fields = ["id", "first_name", "last_name", "phone", "is_active", "is_staff", "role_ids"]
 
     def update(self, instance, validated_data):
         role_ids = validated_data.pop("role_ids", None)
@@ -124,6 +128,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if role_ids is not None:
             from apps.roles.models import Role
             from apps.role_user.models import RoleUser
+            from apps.core.services import PermissionCacheService
             RoleUser.objects.filter(user=instance).delete()
             for role_id in role_ids:
                 try:
@@ -131,6 +136,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
                     RoleUser.objects.get_or_create(role=role, user=instance)
                 except Role.DoesNotExist:
                     pass
+            PermissionCacheService.clear_user_permissions(instance.id)
 
         return instance
 

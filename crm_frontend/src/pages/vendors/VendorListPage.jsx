@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, Download } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Pencil from "@mui/icons-material/Edit"; // was lucide Pencil
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+import Download from "@mui/icons-material/Download";
 import { fetchVendors, deleteVendors, selectList, selectLoading, selectPagination } from "../../features/vendors/vendorsSlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable, { Badge } from "../../components/common/DataTable";
 import api from "../../services/api";
@@ -10,6 +14,9 @@ import api from "../../services/api";
 export default function VendorListPage() {
   const dispatch = useDispatch(); const navigate = useNavigate();
   const list = useSelector(selectList); const loading = useSelector(selectLoading); const pagination = useSelector(selectPagination);
+  const canCreate = useSelector(selectHasPermission("vendors","can_create"));
+  const canUpdate = useSelector(selectHasPermission("vendors","can_update"));
+  const canDelete = useSelector(selectHasPermission("vendors","can_delete"));
   const [search, setSearch] = useState(""); const [page, setPage] = useState(1);
   useEffect(() => { dispatch(fetchVendors({search,page})); }, [dispatch,search,page]);
 
@@ -38,7 +45,7 @@ export default function VendorListPage() {
         breadcrumbs={[{label:"Dashboard",path:"/dashboard"},{label:"Vendors"}]}
         actions={<div style={{display:"flex",gap:8}}>
           <button onClick={handleExport} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 14px",background:"#fff",color:"#374151",borderRadius:8,fontWeight:600,fontSize:13.5,border:"1px solid #E2E8F0",cursor:"pointer"}}><Download size={14}/>Export</button>
-          <Link to="/vendors/new" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 16px",background:"#2E86AB",color:"#fff",borderRadius:8,fontWeight:600,fontSize:13.5,textDecoration:"none"}}><Plus size={14}/>New Vendor</Link>
+          {canCreate && <Link to="/vendors/new" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 16px",background:"#2E86AB",color:"#fff",borderRadius:8,fontWeight:600,fontSize:13.5,textDecoration:"none"}}><Plus size={14}/>New Vendor</Link>}
         </div>}
       />
       <div style={{marginBottom:14}}>
@@ -49,8 +56,8 @@ export default function VendorListPage() {
         emptyMessage="No vendors found."
         actions={row=>(
           <div style={{display:"flex",gap:4,justifyContent:"flex-end"}}>
-            <button onClick={()=>navigate(`/vendors/${row.id}/edit`)} style={{background:"none",border:"1px solid #E2E8F0",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Pencil size={13}/></button>
-            <button onClick={()=>handleDelete(row.id,row.name)} style={{background:"none",border:"1px solid #FEB2B2",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#E53E3E"}}><Trash2 size={13}/></button>
+            {canUpdate && <button onClick={()=>navigate(`/vendors/${row.id}/edit`)} style={{background:"none",border:"1px solid #E2E8F0",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Pencil size={13}/></button>}
+            {canDelete && <button onClick={()=>handleDelete(row.id,row.name)} style={{background:"none",border:"1px solid #FEB2B2",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#E53E3E"}}><Trash2 size={13}/></button>}
           </div>
         )}
       />

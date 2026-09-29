@@ -182,6 +182,21 @@ import React, { useEffect, useState } from "react";
 import api from "../../services/api";
 
 const styles = {
+  card: {
+    background: "#fff",
+    borderRadius: 10,
+    border: "1px solid #E2E8F0",
+    padding: 24,
+    marginBottom: 16,
+  },
+  heading: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: "#2E86AB",
+    marginBottom: 14,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
+  },
   grid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 },
   label: { fontSize: 13, fontWeight: 600, marginBottom: 4 },
   input: {
@@ -366,29 +381,36 @@ export default function CustomFieldRenderer({
     }
   };
 
-  if (loading) return <div>Loading custom fields...</div>;
-  if (!fields.length) return null;
+  if (!loading && !fields.length) return null;
 
   return (
-    <div style={styles.grid}>
-      {fields.map((field) => (
-        <div key={field.id}>
-          <label style={styles.label}>
-            {field.label}
-            {field.is_required && (
-              <span style={{ color: "red" }}> *</span>
-            )}
-          </label>
+    <div style={styles.card}>
+      <div style={styles.heading}>Custom Fields</div>
 
-          {renderField(field)}
+      {loading ? (
+        <div>Loading custom fields...</div>
+      ) : (
+        <div style={styles.grid}>
+          {fields.map((field) => (
+            <div key={field.id}>
+              <label style={styles.label}>
+                {field.label}
+                {field.is_required && (
+                  <span style={{ color: "red" }}> *</span>
+                )}
+              </label>
 
-          {errors?.[`custom_field_values.${field.field_key}`] && (
-            <div style={{ color: "red", fontSize: 12 }}>
-              {errors[`custom_field_values.${field.field_key}`]?.message}
+              {renderField(field)}
+
+              {errors?.[`custom_field_values.${field.field_key}`] && (
+                <div style={{ color: "red", fontSize: 12 }}>
+                  {errors[`custom_field_values.${field.field_key}`]?.message}
+                </div>
+              )}
             </div>
-          )}
+          ))}
         </div>
-      ))}
+      )}
     </div>
   );
 }

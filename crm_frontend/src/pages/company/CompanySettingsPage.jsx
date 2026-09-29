@@ -9,7 +9,8 @@
 // } from "../../features/company/companySlice";
 // import PageHeader from "../../components/common/PageHeader";
 // import api from "../../services/api";
-// import { Camera, CheckCircle } from "lucide-react";
+// import Camera from "@mui/icons-material/PhotoCamera"; // was lucide Camera
+// import CheckCircle from "@mui/icons-material/CheckCircle";
 
 // const S = {
 //   card: {
@@ -1115,9 +1116,12 @@ import {
   selectSelected,
   selectSubmitting,
 } from "../../features/company/companySlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import api from "../../services/api";
-import { Camera, CheckCircle, AlertCircle } from "lucide-react";
+import Camera from "@mui/icons-material/PhotoCamera";
+import CheckCircle from "@mui/icons-material/CheckCircle";
+import AlertCircle from "@mui/icons-material/ErrorOutlineOutlined";
 import CustomFieldRenderer from "../../components/common/CustomFieldRenderer";
 const S = {
   card: {
@@ -1194,6 +1198,7 @@ export default function CompanySettingsPage() {
   const dispatch = useDispatch();
   const company = useSelector(selectSelected);
   const submitting = useSelector(selectSubmitting);
+  const canUpdate = useSelector(selectHasPermission("company", "can_update"));
   const {
     register,
     handleSubmit,
@@ -1449,27 +1454,25 @@ const onSubmit = async (data) => {
             error={errors.footer_text?.message}
           />
         </div>
-      <div style={S.card}>
-  <div style={S.sec}>Custom Fields</div>
-
-  <CustomFieldRenderer
-    moduleSlug="company"
-    register={register}
-    errors={errors}
-    defaultValues={company?.custom_field_values}
-  />
-</div>
+      <CustomFieldRenderer
+        moduleSlug="company"
+        register={register}
+        errors={errors}
+        defaultValues={company?.custom_field_values}
+      />
 
 
-        <div style={S.footer}>
-          <button
-            type="submit"
-            style={{ ...S.btn, ...(submitting && S.btnDisabled) }}
-            disabled={submitting}
-          >
-            {submitting ? "Saving..." : "Save Settings"}
-          </button>
-        </div>
+        {canUpdate && (
+          <div style={S.footer}>
+            <button
+              type="submit"
+              style={{ ...S.btn, ...(submitting && S.btnDisabled) }}
+              disabled={submitting}
+            >
+              {submitting ? "Saving..." : "Save Settings"}
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

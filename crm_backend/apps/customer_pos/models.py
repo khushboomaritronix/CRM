@@ -1,6 +1,16 @@
+from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 from apps.customers.models import Customer
+
+ALLOWED_ATTACHMENT_EXTENSIONS = ["pdf", "xlsx", "xls", "csv", "doc", "docx"]
+MAX_ATTACHMENT_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
+
+def validate_attachment_size(value):
+    if value.size > MAX_ATTACHMENT_SIZE_BYTES:
+        raise ValidationError("File size must not exceed 10 MB.")
 
 
 class CustomerPO(TimeStampedModel, CustomFieldValueMixin):
@@ -22,7 +32,15 @@ class CustomerPO(TimeStampedModel, CustomFieldValueMixin):
     description = models.TextField(blank=True)
     notes = models.TextField(blank=True)
     # File attachments
-    attachment = models.FileField(upload_to="customer_pos/", null=True, blank=True)
+    attachment = models.FileField(
+        upload_to="customer_pos/",
+        null=True,
+        blank=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=ALLOWED_ATTACHMENT_EXTENSIONS),
+            validate_attachment_size,
+        ],
+    )
     attachment_name = models.CharField(max_length=255, blank=True)
 
     class Meta:

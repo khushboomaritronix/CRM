@@ -55,13 +55,16 @@ class InvoiceViewSet(viewsets.ModelViewSet):
             currency=invoice.currency,
             discount_percent=invoice.discount_percent,
             discount_amount=invoice.discount_amount,
+            po_reference=invoice.po_reference,
+            adjustment=invoice.adjustment,
             final_number=final_number,
             invoice=invoice,
         )
         for item in invoice.items.all():
             FinalInvoiceItem.objects.create(
                 final_invoice=final,
-                # description=item.description,
+                item_name=item.item_name,
+                description=item.description,
                 quantity=item.quantity,
                 unit=item.unit,
                 unit_price=item.unit_price,
@@ -103,13 +106,16 @@ class ProformaInvoiceViewSet(viewsets.ModelViewSet):
             currency=proforma.currency,
             discount_percent=proforma.discount_percent,
             discount_amount=proforma.discount_amount,
+            po_reference=proforma.po_reference,
+            adjustment=proforma.adjustment,
             final_number=final_number,
             proforma=proforma,
         )
         for item in proforma.items.all():
             FinalInvoiceItem.objects.create(
                 final_invoice=final,
-                # description=item.description,
+                item_name=item.item_name,
+                description=item.description,
                 quantity=item.quantity,
                 unit=item.unit,
                 unit_price=item.unit_price,

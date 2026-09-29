@@ -28,7 +28,8 @@ from .serializers import (
 
 # Legacy endpoint for backward compatibility
 class DashboardStatsView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    module_slug = "reports"
 
     def get(self, request):
         """Get aggregated dashboard statistics"""
@@ -368,7 +369,8 @@ class VendorReportViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SalesReportView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    module_slug = "reports"
 
     def get(self, request):
         date_from = request.query_params.get("date_from")
@@ -402,7 +404,8 @@ class SalesReportView(APIView):
 
 
 class PaymentReportView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    module_slug = "reports"
 
     def get(self, request):
         date_from = request.query_params.get("date_from")
@@ -431,7 +434,8 @@ class PaymentReportView(APIView):
 
 
 class OutstandingReportView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, HasModulePermission]
+    module_slug = "reports"
 
     def get(self, request):
         today = date.today()

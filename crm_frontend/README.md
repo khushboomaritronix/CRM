@@ -22,7 +22,7 @@ The app proxies API calls to http://localhost:8000 (Django backend).
 - Redux Toolkit + React-Redux
 - React Hook Form
 - Axios (API calls)
-- Lucide React (icons)
+- MUI Icons (@mui/icons-material)
 
 ## 🗂️ Project Structure
 ```

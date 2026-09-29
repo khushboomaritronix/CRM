@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, Download, Upload } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Pencil from "@mui/icons-material/Edit"; // was lucide Pencil
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+import Download from "@mui/icons-material/Download";
+import Upload from "@mui/icons-material/Upload";
 import {
   fetchCustomers,
   deleteCustomers,
@@ -21,6 +25,7 @@ export default function CustomerListPage() {
   const loading = useSelector(selectLoading);
   const pagination = useSelector(selectPagination);
   const canCreate = useSelector(selectHasPermission("customers", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("customers", "can_update"));
   const canDelete = useSelector(selectHasPermission("customers", "can_delete"));
   const canExport = useSelector(selectHasPermission("customers", "can_export"));
 
@@ -128,13 +133,15 @@ export default function CustomerListPage() {
         emptyMessage="No customers found. Add your first customer!"
         actions={(row) => (
           <div style={styles.rowActions}>
-            <button
-              style={styles.btnIcon}
-              onClick={() => navigate(`/customers/${row.id}/edit`)}
-              title="Edit"
-            >
-              <Pencil size={14} />
-            </button>
+            {canUpdate && (
+              <button
+                style={styles.btnIcon}
+                onClick={() => navigate(`/customers/${row.id}/edit`)}
+                title="Edit"
+              >
+                <Pencil size={14} />
+              </button>
+            )}
             {canDelete && (
               <button
                 style={{ ...styles.btnIcon, color: "#E53E3E" }}

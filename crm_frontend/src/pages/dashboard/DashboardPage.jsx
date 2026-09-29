@@ -2,15 +2,13 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectCurrentUser } from "../../features/auth/authSlice";
-import {
-  Users,
-  Building2,
-  Receipt,
-  ShoppingCart,
-  FileText,
-  TrendingUp,
-  ArrowRight,
-} from "lucide-react";
+import Users from "@mui/icons-material/People";
+import Building2 from "@mui/icons-material/Business";
+import Receipt from "@mui/icons-material/Receipt";
+import ShoppingCart from "@mui/icons-material/ShoppingCart";
+import FileText from "@mui/icons-material/Description";
+import TrendingUp from "@mui/icons-material/TrendingUp";
+import ArrowRight from "@mui/icons-material/ArrowForward";
 import api from "../../services/api";
 import { useNavigate } from "react-router-dom";
 

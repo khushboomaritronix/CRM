@@ -13,7 +13,8 @@
 // import DocLineItems from "../../components/common/DocLineItems";
 // import CustomerAddressBlock from "../../components/common/CustomerAddressBlock";
 // import api from "../../services/api";
-// import { Copy, ExternalLink } from "lucide-react";
+// import Copy from "@mui/icons-material/ContentCopy"; // was lucide Copy
+// import ExternalLink from "@mui/icons-material/OpenInNew"; // was lucide ExternalLink
 // import CustomFieldRenderer from "../../components/common/CustomFieldRenderer";
 
 // const Cs = {
@@ -875,7 +876,9 @@ import PageHeader from "../../components/common/PageHeader";
 import DocLineItems from "../../components/common/DocLineItems";
 import CustomerAddressBlock from "../../components/common/CustomerAddressBlock";
 import api from "../../services/api";
-import { Copy, ExternalLink,CreditCard } from "lucide-react";
+import Copy from "@mui/icons-material/ContentCopy";
+import ExternalLink from "@mui/icons-material/OpenInNew";
+import CreditCard from "@mui/icons-material/CreditCard";
 import CustomFieldRenderer from "../../components/common/CustomFieldRenderer";
 
 const Cs = {
@@ -1350,15 +1353,12 @@ export default function ProformaFormPage() {
           </div>
         </div>
 
-        <div style={Cs}>
-          <div style={Ss}>Custom Fields</div>
-          <CustomFieldRenderer
-            moduleSlug="proforma_invoices"
-            register={reg}
-            errors={e}
-            defaultValues={selected?.custom_field_values}
-          />
-        </div>
+        <CustomFieldRenderer
+          moduleSlug="proforma_invoices"
+          register={reg}
+          errors={e}
+          defaultValues={selected?.custom_field_values}
+        />
 
         <div
           style={{

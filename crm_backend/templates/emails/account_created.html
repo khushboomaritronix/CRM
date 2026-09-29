@@ -1,0 +1,21 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+  <p style="margin:0 0 16px;">Hello {{ full_name }},</p>
+  <p style="margin:0 0 20px;">An account has been created for you on the CRM. Use the credentials below to sign in.</p>
+  <table style="width:100%;border-collapse:collapse;margin:0 0 24px;background:#F7F9FC;border-radius:8px;">
+    <tr>
+      <td style="padding:16px 20px;">
+        <p style="margin:0 0 10px;font-size:13px;color:#5B6570;">
+          <strong style="color:#1E3A5F;">Login Email:</strong> {{ email }}
+        </p>
+        <p style="margin:0;font-size:13px;color:#5B6570;">
+          <strong style="color:#1E3A5F;">Temporary Password:</strong> {{ password }}
+        </p>
+      </td>
+    </tr>
+  </table>
+  <p style="margin:0 0 24px;text-align:center;">
+    <a href="{{ frontend_url }}/login" style="display:inline-block;background:#2E86AB;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:700;font-size:14px;">Sign in</a>
+  </p>
+  <p style="margin:0;color:#5B6570;font-size:12.5px;">For your security, please sign in and change this password as soon as possible.</p>
+{% endblock %}

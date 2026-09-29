@@ -44,6 +44,12 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
 
 CORS_ALLOW_CREDENTIALS = True
 
+# Required by Django 4+ for POST requests (e.g. the Django admin login form)
+# submitted over HTTPS from a different host than the one serving the request.
+CSRF_TRUSTED_ORIGINS = [
+    origin for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if origin
+]
+
 # ─── DATABASE ──────────────────────────────────────────────────────────────────
 
 # Use connection pooling in production
@@ -87,6 +93,10 @@ DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
 
 # ─── LOGGING ───────────────────────────────────────────────────────────────────
 
+# RotatingFileHandler does not create its parent directory — without this the
+# app crashes on startup on a fresh deploy where logs/ doesn't exist yet.
+os.makedirs(BASE_DIR / "logs", exist_ok=True)
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -110,7 +120,7 @@ LOGGING = {
         "file": {
             "level": "ERROR",
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": "logs/django.log",
+            "filename": str(BASE_DIR / "logs" / "django.log"),
             "maxBytes": 1024 * 1024 * 10,  # 10 MB
             "backupCount": 5,
             "formatter": "verbose",
@@ -144,6 +154,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler",
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle"

@@ -14,3 +14,10 @@ class PaymentViewSet(viewsets.ModelViewSet):
     filterset_fields = ["payment_type", "payment_method", "status", "customer", "vendor"]
     search_fields = ["payment_number", "customer__name", "vendor__name", "invoice_ref", "reference"]
     ordering_fields = ["payment_date", "amount", "created_at"]
+
+    def perform_destroy(self, instance):
+        proforma = instance.proforma
+        finalinvoice = instance.finalinvoice
+        instance.delete()
+        PaymentSerializer._sync_document(proforma)
+        PaymentSerializer._sync_document(finalinvoice)

@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { TrendingUp, Users, FileText, DollarSign, AlertCircle, BarChart2, Download } from "lucide-react";
+import TrendingUp from "@mui/icons-material/TrendingUp";
+import Users from "@mui/icons-material/People"; // was lucide Users
+import FileText from "@mui/icons-material/Description"; // was lucide FileText
+import DollarSign from "@mui/icons-material/AttachMoney"; // was lucide DollarSign
+import AlertCircle from "@mui/icons-material/ErrorOutlineOutlined"; // was lucide AlertCircle
+import BarChart2 from "@mui/icons-material/BarChart"; // was lucide BarChart2
+import Download from "@mui/icons-material/Download";
 import api from "../../services/api";
 import PageHeader from "../../components/common/PageHeader";
 

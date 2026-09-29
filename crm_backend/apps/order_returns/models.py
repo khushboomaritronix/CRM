@@ -2,6 +2,7 @@ from decimal import Decimal
 from django.db import models
 from django.core.exceptions import ValidationError
 from apps.core.models import TimeStampedModel, CustomFieldValueMixin
+from apps.core.utils import money
 from apps.customers.models import Customer
 from apps.invoices.models import Invoice
 
@@ -84,10 +85,10 @@ class OrderReturn(TimeStampedModel, CustomFieldValueMixin):
     def recalculate(self):
         subtotal = tax = Decimal(0)
         for item in self.items.all():
-            item.amount = item.quantity * item.unit_price
+            item.amount = money(item.quantity * item.unit_price)
             item.save()
             subtotal += item.amount
-            tax += item.amount * (item.tax_percent / 100)
+            tax += money(item.amount * (item.tax_percent / 100))
         self.subtotal = subtotal
         self.tax_amount = tax
         self.total = subtotal + tax

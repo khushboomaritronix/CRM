@@ -13,7 +13,8 @@ import PageHeader from "../../components/common/PageHeader";
 import DocLineItems from "../../components/common/DocLineItems";
 import CustomerAddressBlock from "../../components/common/CustomerAddressBlock";
 import api from "../../services/api";
-import { Copy, ExternalLink } from "lucide-react";
+import Copy from "@mui/icons-material/ContentCopy"; // was lucide Copy
+import ExternalLink from "@mui/icons-material/OpenInNew"; // was lucide ExternalLink
 
 const Cs = {
   background: "#fff",

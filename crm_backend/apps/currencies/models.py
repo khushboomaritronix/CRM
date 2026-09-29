@@ -16,3 +16,8 @@ class Currency(TimeStampedModel, CustomFieldValueMixin):
 
     def __str__(self):
         return f"{self.code} - {self.name}"
+
+    def save(self, *args, **kwargs):
+        if self.is_base:
+            Currency.objects.filter(is_base=True).exclude(pk=self.pk).update(is_base=False)
+        super().save(*args, **kwargs)

@@ -1067,16 +1067,12 @@ export default function CreditNoteFormPage() {
         </div>
          {/* ================= CUSTOM FIELDS ================= */}
 
-        <div style={Cs}>
-          <div style={Ss}>Custom Fields</div>
-
-          <CustomFieldRenderer
-            moduleSlug="credit_notes"
-            register={register}
-            errors={errors}
-            defaultValues={selected?.custom_field_values}
-          />
-        </div>
+        <CustomFieldRenderer
+          moduleSlug="credit_notes"
+          register={register}
+          errors={errors}
+          defaultValues={selected?.custom_field_values}
+        />
 
         {/* ================= ACTION BUTTONS ================= */}
 

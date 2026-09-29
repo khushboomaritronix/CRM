@@ -1,5 +1,6 @@
 import React from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import ChevronUp from "@mui/icons-material/ExpandLess"; // was lucide ChevronUp
+import ChevronDown from "@mui/icons-material/ExpandMore"; // was lucide ChevronDown
 import LoadingSpinner from "./LoadingSpinner";
 
 export default function DataTable({

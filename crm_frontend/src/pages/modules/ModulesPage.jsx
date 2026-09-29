@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import api from "../../services/api";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
-import { Plus, Edit, Trash2, Eye, EyeOff } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Edit from "@mui/icons-material/Edit";
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+import Eye from "@mui/icons-material/Visibility"; // was lucide Eye
+import EyeOff from "@mui/icons-material/VisibilityOff"; // was lucide EyeOff
 
 const AVAILABLE_ICONS = [
   "LayoutDashboard", "Users", "Building2", "FileSearch", "FileText", "Receipt", 
@@ -12,6 +18,9 @@ const AVAILABLE_ICONS = [
 ];
 
 export default function ModulesPage() {
+  const canCreate = useSelector(selectHasPermission("modules", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("modules", "can_update"));
+  const canDelete = useSelector(selectHasPermission("modules", "can_delete"));
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -123,24 +132,26 @@ export default function ModulesPage() {
           { label: "Modules" },
         ]}
         actions={
-          <button
-            onClick={handleAddNew}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "9px 16px",
-              background: "#2E86AB",
-              color: "#fff",
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 13.5,
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            <Plus size={16} /> New Module
-          </button>
+          canCreate && (
+            <button
+              onClick={handleAddNew}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "9px 16px",
+                background: "#2E86AB",
+                color: "#fff",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 13.5,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              <Plus size={16} /> New Module
+            </button>
+          )
         }
       />
 
@@ -374,50 +385,56 @@ export default function ModulesPage() {
                     </span>
                   </td>
                   <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                    <button
-                      onClick={() => handleToggleActive(module)}
-                      title={module.is_active ? "Hide from sidebar" : "Show in sidebar"}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        marginRight: 8,
-                        color: module.is_active ? "#059669" : "#D1D5DB",
-                      }}
-                    >
-                      {module.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
-                    </button>
-                    <button
-                      onClick={() => handleEdit(module)}
-                      style={{
-                        background: "#E3F2FD",
-                        color: "#2E86AB",
-                        border: "none",
-                        padding: "4px 8px",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                        marginRight: 6,
-                        fontSize: 12,
-                        fontWeight: 600,
-                      }}
-                    >
-                      <Edit size={14} style={{ display: "inline", marginRight: 4 }} /> Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(module.id)}
-                      style={{
-                        background: "#FEE",
-                        color: "#C33",
-                        border: "none",
-                        padding: "4px 8px",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                        fontSize: 12,
-                        fontWeight: 600,
-                      }}
-                    >
-                      <Trash2 size={14} style={{ display: "inline", marginRight: 4 }} /> Delete
-                    </button>
+                    {canUpdate && (
+                      <button
+                        onClick={() => handleToggleActive(module)}
+                        title={module.is_active ? "Hide from sidebar" : "Show in sidebar"}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          marginRight: 8,
+                          color: module.is_active ? "#059669" : "#D1D5DB",
+                        }}
+                      >
+                        {module.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
+                      </button>
+                    )}
+                    {canUpdate && (
+                      <button
+                        onClick={() => handleEdit(module)}
+                        style={{
+                          background: "#E3F2FD",
+                          color: "#2E86AB",
+                          border: "none",
+                          padding: "4px 8px",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                          marginRight: 6,
+                          fontSize: 12,
+                          fontWeight: 600,
+                        }}
+                      >
+                        <Edit size={14} style={{ display: "inline", marginRight: 4 }} /> Edit
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDelete(module.id)}
+                        style={{
+                          background: "#FEE",
+                          color: "#C33",
+                          border: "none",
+                          padding: "4px 8px",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                          fontSize: 12,
+                          fontWeight: 600,
+                        }}
+                      >
+                        <Trash2 size={14} style={{ display: "inline", marginRight: 4 }} /> Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

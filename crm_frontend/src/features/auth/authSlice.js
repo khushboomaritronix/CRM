@@ -97,7 +97,12 @@ const authSlice = createSlice({
       })
       // fetchMe
       .addCase(fetchCurrentUser.fulfilled, (state, { payload }) => {
-        state.user = payload;
+        const { permissions, ...user } = payload;
+        state.user = user;
+        if (permissions) {
+          state.permissions = permissions;
+          localStorage.setItem("permissions", JSON.stringify(permissions));
+        }
       })
       // logout
       .addCase(logoutUser.fulfilled, (state) => {

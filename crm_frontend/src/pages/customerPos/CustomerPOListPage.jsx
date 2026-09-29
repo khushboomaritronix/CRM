@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   fetchCustomerPos,
   deleteCustomerPos,
@@ -8,9 +8,16 @@ import {
   selectLoading,
   selectPagination,
 } from "../../features/customerPos/customerPosSlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable, { Badge } from "../../components/common/DataTable";
-import { Plus, Search, Download, FileText, Eye } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Search from "@mui/icons-material/Search";
+import Download from "@mui/icons-material/Download";
+import FileText from "@mui/icons-material/Description"; // was lucide FileText
+import Eye from "@mui/icons-material/Visibility"; // was lucide Eye
+import Pencil from "@mui/icons-material/Edit";
+import Trash2 from "@mui/icons-material/Delete";
 
 const STATUS_COLORS = {
   received: "blue",
@@ -21,9 +28,13 @@ const STATUS_COLORS = {
 
 export default function CustomerPOListPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const list = useSelector(selectList);
   const loading = useSelector(selectLoading);
   const pagination = useSelector(selectPagination);
+  const canCreate = useSelector(selectHasPermission("customer_pos", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("customer_pos", "can_update"));
+  const canDelete = useSelector(selectHasPermission("customer_pos", "can_delete"));
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [page, setPage] = useState(1);
@@ -140,23 +151,25 @@ export default function CustomerPOListPage() {
           { label: "Customer POs" },
         ]}
         actions={
-          <Link
-            to="/customer-pos/new"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "9px 16px",
-              background: "#2E86AB",
-              color: "#fff",
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 13.5,
-              textDecoration: "none",
-            }}
-          >
-            <Plus size={15} /> New Customer PO
-          </Link>
+          canCreate && (
+            <Link
+              to="/customer-pos/new"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "9px 16px",
+                background: "#2E86AB",
+                color: "#fff",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 13.5,
+                textDecoration: "none",
+              }}
+            >
+              <Plus size={15} /> New Customer PO
+            </Link>
+          )
         }
       />
 
@@ -229,11 +242,53 @@ export default function CustomerPOListPage() {
         columns={columns}
         data={list}
         loading={loading}
-        onEdit={(id) => `/customer-pos/${id}/edit`}
-        onDelete={(id) => dispatch(deleteCustomerPos(id))}
         pagination={pagination}
         onPageChange={setPage}
         emptyMessage="No customer POs found. Create your first one!"
+        actions={(row) => (
+          <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }}>
+            {canUpdate && (
+              <button
+                onClick={() => navigate(`/customer-pos/${row.id}/edit`)}
+                style={{
+                  background: "none",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: 6,
+                  width: 30,
+                  height: 30,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Pencil size={13} />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={() => {
+                  if (!window.confirm("Delete this customer PO? This cannot be undone.")) return;
+                  dispatch(deleteCustomerPos(row.id));
+                }}
+                style={{
+                  background: "none",
+                  border: "1px solid #FEB2B2",
+                  borderRadius: 6,
+                  width: 30,
+                  height: 30,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#E53E3E",
+                }}
+              >
+                <Trash2 size={13} />
+              </button>
+            )}
+          </div>
+        )}
       />
     </div>
   );

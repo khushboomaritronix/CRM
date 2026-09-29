@@ -4,7 +4,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from jinja2 import Environment
+from jinja2.sandbox import SandboxedEnvironment
 from apps.core.permissions import IsAdminOrSuperuser
 from apps.company.models import CompanyProfile
 from .models import PDFTemplate
@@ -29,14 +29,16 @@ def get_document(module_type, pk):
     return Model.objects.prefetch_related("items").get(pk=pk)
 
 
-from jinja2 import Environment, pass_context
+from jinja2 import pass_context
 import re
 
 def render_html(template_str, document, company):
     """Render Jinja2 template with document context."""
-    
-    # Create environment with custom filters
-    env = Environment()
+
+    # Create sandboxed environment with custom filters — templates can be
+    # authored by non-superuser staff, so unrestricted Jinja2 would allow
+    # server-side template injection via attribute traversal.
+    env = SandboxedEnvironment()
     
     # Add custom filters
     @pass_context

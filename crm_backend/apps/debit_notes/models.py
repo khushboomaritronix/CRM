@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.db import models
 from apps.core.models import TimeStampedModel, CustomFieldValueMixin
+from apps.core.utils import money
 from apps.vendors.models import Vendor
 from apps.invoices.models import PurchaseOrder
 

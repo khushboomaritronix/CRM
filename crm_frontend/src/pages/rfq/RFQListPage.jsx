@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, FileDown } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Pencil from "@mui/icons-material/Edit"; // was lucide Pencil
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+import FileDown from "@mui/icons-material/FileDownload"; // was lucide FileDown
 import {
   fetchRfq,
   deleteRfq,
@@ -9,6 +12,7 @@ import {
   selectLoading,
   selectPagination,
 } from "../../features/rfq/rfqSlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable, { Badge } from "../../components/common/DataTable";
 import api from "../../services/api";
@@ -86,6 +90,9 @@ export default function RFQListPage() {
   const list = useSelector(selectList);
   const loading = useSelector(selectLoading);
   const pagination = useSelector(selectPagination);
+  const canCreate = useSelector(selectHasPermission("rfq", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("rfq", "can_update"));
+  const canDelete = useSelector(selectHasPermission("rfq", "can_delete"));
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
@@ -95,6 +102,16 @@ export default function RFQListPage() {
   const del = (id, n) => {
     if (!window.confirm(`Delete "${n}"?`)) return;
     dispatch(deleteRfq(id));
+  };
+  const pdf = async (id) => {
+    try {
+      const r = await api.get(`/pdf-templates/generate/rfq/${id}/`, {
+        responseType: "blob",
+      });
+      window.open(URL.createObjectURL(r.data), "_blank");
+    } catch {
+      alert("PDF failed. Make sure a PDF template is configured.");
+    }
   };
 
   const columns = [
@@ -159,9 +176,11 @@ export default function RFQListPage() {
           { label: "RFQ" },
         ]}
         actions={
-          <Link to="/rfq/new" style={btnPri}>
-            <Plus size={14} /> New RFQ
-          </Link>
+          canCreate && (
+            <Link to="/rfq/new" style={btnPri}>
+              <Plus size={14} /> New RFQ
+            </Link>
+          )
         }
       />
       <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
@@ -212,17 +231,28 @@ export default function RFQListPage() {
         actions={(row) => (
           <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }}>
             <button
-              onClick={() => navigate(`/rfq/${row.id}/edit`)}
-              style={iconBtn()}
+              onClick={() => pdf(row.id)}
+              title="PDF"
+              style={iconBtn({ color: "#6B7280" })}
             >
-              <Pencil size={13} />
+              <FileDown size={13} />
             </button>
-            <button
-              onClick={() => del(row.id, row.rfq_number)}
-              style={iconBtn({ border: "1px solid #FEB2B2", color: "#E53E3E" })}
-            >
-              <Trash2 size={13} />
-            </button>
+            {canUpdate && (
+              <button
+                onClick={() => navigate(`/rfq/${row.id}/edit`)}
+                style={iconBtn()}
+              >
+                <Pencil size={13} />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={() => del(row.id, row.rfq_number)}
+                style={iconBtn({ border: "1px solid #FEB2B2", color: "#E53E3E" })}
+              >
+                <Trash2 size={13} />
+              </button>
+            )}
           </div>
         )}
       />

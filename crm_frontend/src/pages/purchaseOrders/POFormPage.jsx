@@ -292,16 +292,12 @@ const currencyCode = currencyObj?.code || "INR";
             <textarea rows={2} style={Ta} {...reg("terms")} />
           </div>
         </div>
-        <div style={Cs}>
-  <div style={Ss}>Custom Fields</div>
-
-  <CustomFieldRenderer
-    moduleSlug="purchase_orders"
-    register={reg}
-    errors={e}
-    defaultValues={selected?.custom_field_values}
-  />
-</div>
+        <CustomFieldRenderer
+          moduleSlug="purchase_orders"
+          register={reg}
+          errors={e}
+          defaultValues={selected?.custom_field_values}
+        />
         <div
           style={{
             display: "flex",

@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Pencil from "@mui/icons-material/Edit"; // was lucide Pencil
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
 import { fetchOrderReturns, deleteOrderReturns, selectList, selectLoading, selectPagination } from "../../features/orderReturns/orderReturnsSlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable from "../../components/common/DataTable";
 import DocLineItems from "../../components/common/DocLineItems";
@@ -15,6 +18,9 @@ const Bdg=({color="gray",children})=><span style={{display:"inline-flex",alignIt
 export default function OrderReturnListPage() {
   const dispatch=useDispatch(); const navigate=useNavigate();
   const list=useSelector(selectList); const loading=useSelector(selectLoading); const pagination=useSelector(selectPagination);
+  const canCreate=useSelector(selectHasPermission("order_returns","can_create"));
+  const canUpdate=useSelector(selectHasPermission("order_returns","can_update"));
+  const canDelete=useSelector(selectHasPermission("order_returns","can_delete"));
   const[search,setSearch]=useState(""); const[status,setStatus]=useState(""); const[page,setPage]=useState(1);
   useEffect(()=>{dispatch(fetchOrderReturns({search,status,page}))},[dispatch,search,status,page]);
   const del=(id,n)=>{if(window.confirm(`Delete "${n||id}"?`))dispatch(deleteOrderReturns(id));};
@@ -32,7 +38,7 @@ export default function OrderReturnListPage() {
     <div>
       <PageHeader title="Order Returns" subtitle={`${pagination.count} records`}
         breadcrumbs={[{label:"Dashboard",path:"/dashboard"},{label:"Order Returns"}]}
-        actions={<Link to="/order-returns/new" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 16px",background:"#2E86AB",color:"#fff",borderRadius:8,fontWeight:600,fontSize:13.5,textDecoration:"none",border:"none",cursor:"pointer"}}><Plus size={14}/> New Order Return</Link>}
+        actions={canCreate && <Link to="/order-returns/new" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 16px",background:"#2E86AB",color:"#fff",borderRadius:8,fontWeight:600,fontSize:13.5,textDecoration:"none",border:"none",cursor:"pointer"}}><Plus size={14}/> New Order Return</Link>}
       />
       <div style={{display:"flex",gap:10,marginBottom:14,flexWrap:"wrap"}}>
         <input style={{maxWidth:360,padding:"9px 13px",border:"1.5px solid #E2E8F0",borderRadius:8,fontSize:14,outline:"none",width:"100%"}}
@@ -45,8 +51,8 @@ export default function OrderReturnListPage() {
       <DataTable columns={columns} data={list} loading={loading} pagination={pagination} onPageChange={setPage} emptyMessage="No records found."
         actions={row=>(
           <div style={{display:"flex",gap:4}}>
-            <button onClick={()=>navigate(`/order-returns/${row.id}/edit`)} style={{background:"none",border:"1px solid #E2E8F0",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Pencil size={13}/></button>
-            <button onClick={()=>del(row.id,row.return_number)} style={{background:"none",border:"1px solid #FEB2B2",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#E53E3E"}}><Trash2 size={13}/></button>
+            {canUpdate && <button onClick={()=>navigate(`/order-returns/${row.id}/edit`)} style={{background:"none",border:"1px solid #E2E8F0",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}><Pencil size={13}/></button>}
+            {canDelete && <button onClick={()=>del(row.id,row.return_number)} style={{background:"none",border:"1px solid #FEB2B2",borderRadius:6,width:30,height:30,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",color:"#E53E3E"}}><Trash2 size={13}/></button>}
           </div>
         )}
       />

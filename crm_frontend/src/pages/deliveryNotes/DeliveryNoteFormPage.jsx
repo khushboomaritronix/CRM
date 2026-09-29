@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import PageHeader from "../../components/common/PageHeader";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
-import { ArrowLeft } from "lucide-react";
+import ArrowLeft from "@mui/icons-material/ArrowBack"; // was lucide ArrowLeft
 
 export default function DeliveryNoteFormPage() {
   const { id } = useParams();

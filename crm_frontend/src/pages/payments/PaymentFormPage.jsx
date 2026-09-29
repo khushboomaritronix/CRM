@@ -948,8 +948,16 @@ export default function PaymentFormPage() {
                 step="0.01"
                 min="0.01"
                 style={{ ...Is, ...(e.amount ? { borderColor: "#EF4444" } : {}) }}
-                {...reg("amount", { required: "Required" })}
+                {...reg("amount", {
+                  required: "Required",
+                  min: { value: 0.01, message: "Must be greater than 0" },
+                })}
               />
+              {e.amount && (
+                <div style={{ fontSize: 11.5, color: "#DC2626", marginTop: 3 }}>
+                  {e.amount.message}
+                </div>
+              )}
             </div>
 
             <div>

@@ -6,7 +6,10 @@ import{fetchOneCustomerPos,selectSelected,selectSubmitting}from"../../features/c
 import PageHeader from"../../components/common/PageHeader";
 import CustomerAddressBlock from"../../components/common/CustomerAddressBlock";
 import api from"../../services/api";
-import{Upload,X,FileText,Download}from"lucide-react";
+import Upload from "@mui/icons-material/Upload";
+import X from "@mui/icons-material/Close";
+import FileText from "@mui/icons-material/Description";
+import Download from "@mui/icons-material/Download";
 
 const Cs={background:"#fff",borderRadius:10,border:"1px solid #E2E8F0",padding:22,marginBottom:14};
 const Ss={fontSize:11.5,fontWeight:700,color:"#2E86AB",marginBottom:13,textTransform:"uppercase",letterSpacing:0.8};
@@ -18,6 +21,21 @@ const Sl={...Is,background:"#fff"};
 const Ta={...Is,resize:"vertical"};
 const STATS=["received","processing","fulfilled","cancelled"];
 const CURRENCIES=["INR","USD","EUR","GBP","AED","SGD","JPY"];
+const ALLOWED_ATTACHMENT_EXTENSIONS=["pdf","xlsx","xls","csv","doc","docx"];
+const MAX_ATTACHMENT_SIZE_BYTES=10*1024*1024;
+
+function validateAttachment(file){
+  const ext=file.name.split(".").pop()?.toLowerCase();
+  if(!ext||!ALLOWED_ATTACHMENT_EXTENSIONS.includes(ext)){
+    alert(`Unsupported file type. Allowed: ${ALLOWED_ATTACHMENT_EXTENSIONS.join(", ")}`);
+    return false;
+  }
+  if(file.size>MAX_ATTACHMENT_SIZE_BYTES){
+    alert("File size must not exceed 10 MB.");
+    return false;
+  }
+  return true;
+}
 
 export default function CustomerPOFormPage(){
   const dispatch=useDispatch();const navigate=useNavigate();const{id}=useParams();
@@ -51,13 +69,13 @@ export default function CustomerPOFormPage(){
 
   const onFileChange=(ev)=>{
     const file=ev.target.files?.[0];
-    if(file)setAttachFile(file);
+    if(file&&validateAttachment(file))setAttachFile(file);
   };
 
   const onSubmit=async(data)=>{
     setIsSubmitting(true);
     const fd=new FormData();
-    Object.entries(data).forEach(([k,v])=>{if(v!==null&&v!==undefined&&v!=="")fd.append(k,v);});
+    Object.entries(data).forEach(([k,v])=>{if(v!==null&&v!==undefined)fd.append(k,v);});
     if(attachFile){fd.append("attachment",attachFile);fd.append("attachment_name",attachFile.name);}
 
     try{
@@ -139,7 +157,7 @@ export default function CustomerPOFormPage(){
             style={{border:"2px dashed #CBD5E0",borderRadius:10,padding:"28px 20px",textAlign:"center",cursor:"pointer",background:"#F8FAFC",transition:"all 0.2s"}}
             onDragOver={ev=>{ev.preventDefault();ev.currentTarget.style.borderColor="#2E86AB";ev.currentTarget.style.background="#EFF6FF";}}
             onDragLeave={ev=>{ev.currentTarget.style.borderColor="#CBD5E0";ev.currentTarget.style.background="#F8FAFC";}}
-            onDrop={ev=>{ev.preventDefault();const f=ev.dataTransfer.files?.[0];if(f)setAttachFile(f);ev.currentTarget.style.borderColor="#CBD5E0";ev.currentTarget.style.background="#F8FAFC";}}>
+            onDrop={ev=>{ev.preventDefault();const f=ev.dataTransfer.files?.[0];if(f&&validateAttachment(f))setAttachFile(f);ev.currentTarget.style.borderColor="#CBD5E0";ev.currentTarget.style.background="#F8FAFC";}}>
             <input ref={fileRef} type="file" accept=".pdf,.xlsx,.xls,.csv,.doc,.docx" style={{display:"none"}} onChange={onFileChange}/>
             <Upload size={28} color="#94A3B8" style={{marginBottom:8}}/>
             <div style={{fontSize:14,fontWeight:600,color:"#374151",marginBottom:4}}>

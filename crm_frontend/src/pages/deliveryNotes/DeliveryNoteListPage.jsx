@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import api from "../../services/api";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Edit from "@mui/icons-material/Edit";
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
 
 export default function DeliveryNoteListPage() {
+  const canCreate = useSelector(selectHasPermission("delivery_notes", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("delivery_notes", "can_update"));
+  const canDelete = useSelector(selectHasPermission("delivery_notes", "can_delete"));
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -66,25 +73,27 @@ export default function DeliveryNoteListPage() {
           { label: "Delivery Notes" },
         ]}
         actions={
-          <Link
-            to="/delivery-notes/new"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "9px 16px",
-              background: "#2E86AB",
-              color: "#fff",
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 13.5,
-              border: "none",
-              cursor: "pointer",
-              textDecoration: "none",
-            }}
-          >
-            <Plus size={16} /> New Delivery Note
-          </Link>
+          canCreate && (
+            <Link
+              to="/delivery-notes/new"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "9px 16px",
+                background: "#2E86AB",
+                color: "#fff",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 13.5,
+                border: "none",
+                cursor: "pointer",
+                textDecoration: "none",
+              }}
+            >
+              <Plus size={16} /> New Delivery Note
+            </Link>
+          )
         }
       />
 
@@ -194,42 +203,46 @@ export default function DeliveryNoteListPage() {
                     {new Date(note.delivery_date).toLocaleDateString()}
                   </td>
                   <td style={{ padding: "12px 16px", textAlign: "center" }}>
-                    <Link
-                      to={`/delivery-notes/${note.id}/edit`}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        padding: "6px 10px",
-                        background: "#E3F2FD",
-                        color: "#2E86AB",
-                        border: "none",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                        textDecoration: "none",
-                        marginRight: 6,
-                        fontSize: 12,
-                      }}
-                    >
-                      <Edit size={14} /> Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(note.id)}
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 4,
-                        padding: "6px 10px",
-                        background: "#FEE",
-                        color: "#C33",
-                        border: "none",
-                        borderRadius: 4,
-                        cursor: "pointer",
-                        fontSize: 12,
-                      }}
-                    >
-                      <Trash2 size={14} /> Delete
-                    </button>
+                    {canUpdate && (
+                      <Link
+                        to={`/delivery-notes/${note.id}/edit`}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          padding: "6px 10px",
+                          background: "#E3F2FD",
+                          color: "#2E86AB",
+                          border: "none",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                          textDecoration: "none",
+                          marginRight: 6,
+                          fontSize: 12,
+                        }}
+                      >
+                        <Edit size={14} /> Edit
+                      </Link>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDelete(note.id)}
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          padding: "6px 10px",
+                          background: "#FEE",
+                          color: "#C33",
+                          border: "none",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                          fontSize: 12,
+                        }}
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

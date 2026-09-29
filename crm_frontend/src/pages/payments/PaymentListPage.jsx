@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  ArrowDownLeft,
-  ArrowUpRight,
-} from "lucide-react";
+import Plus from "@mui/icons-material/Add";
+import Pencil from "@mui/icons-material/Edit";
+import Trash2 from "@mui/icons-material/Delete";
+import ArrowDownLeft from "@mui/icons-material/CallReceived";
+import ArrowUpRight from "@mui/icons-material/CallMade";
 import {
   fetchPayments,
   deletePayments,
@@ -15,6 +13,7 @@ import {
   selectLoading,
   selectPagination,
 } from "../../features/payments/paymentsSlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable from "../../components/common/DataTable";
 
@@ -80,6 +79,9 @@ export default function PaymentListPage() {
   const list = useSelector(selectList);
   const loading = useSelector(selectLoading);
   const pagination = useSelector(selectPagination);
+  const canCreate = useSelector(selectHasPermission("payments", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("payments", "can_update"));
+  const canDelete = useSelector(selectHasPermission("payments", "can_delete"));
   const [search, setSearch] = useState("");
   const [type, setType] = useState("");
   const [page, setPage] = useState(1);
@@ -197,23 +199,25 @@ export default function PaymentListPage() {
           { label: "Payments" },
         ]}
         actions={
-          <Link
-            to="/payments/new"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "9px 16px",
-              background: "#2E86AB",
-              color: "#fff",
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 13.5,
-              textDecoration: "none",
-            }}
-          >
-            <Plus size={14} /> Record Payment
-          </Link>
+          canCreate && (
+            <Link
+              to="/payments/new"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "9px 16px",
+                background: "#2E86AB",
+                color: "#fff",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 13.5,
+                textDecoration: "none",
+              }}
+            >
+              <Plus size={14} /> Record Payment
+            </Link>
+          )
         }
       />
 
@@ -359,21 +363,25 @@ export default function PaymentListPage() {
         emptyMessage="No payments recorded."
         actions={(row) => (
           <div style={{ display: "flex", gap: 4 }}>
-            <button
-              onClick={() => navigate(`/payments/${row.id}/edit`)}
-              style={IBTN}
-            >
-              <Pencil size={13} />
-            </button>
-            <button
-              onClick={() =>
-                window.confirm("Delete payment?") &&
-                dispatch(deletePayments(row.id))
-              }
-              style={{ ...IBTN, border: "1px solid #FEB2B2", color: "#E53E3E" }}
-            >
-              <Trash2 size={13} />
-            </button>
+            {canUpdate && (
+              <button
+                onClick={() => navigate(`/payments/${row.id}/edit`)}
+                style={IBTN}
+              >
+                <Pencil size={13} />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={() =>
+                  window.confirm("Delete payment?") &&
+                  dispatch(deletePayments(row.id))
+                }
+                style={{ ...IBTN, border: "1px solid #FEB2B2", color: "#E53E3E" }}
+              >
+                <Trash2 size={13} />
+              </button>
+            )}
           </div>
         )}
       />

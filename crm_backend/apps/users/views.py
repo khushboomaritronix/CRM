@@ -10,8 +10,9 @@ from .serializers import (
     CustomTokenObtainPairSerializer,
     UserListSerializer, UserDetailSerializer,
     UserCreateSerializer, UserUpdateSerializer,
-    ChangePasswordSerializer,
+    ChangePasswordSerializer, get_user_permissions_dict,
 )
+from .emails import send_password_changed_email
 from apps.core.permissions import IsAdminOrSuperuser
 
 
@@ -42,7 +43,9 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def me(self, request):
         serializer = UserDetailSerializer(request.user)
-        return Response(serializer.data)
+        data = serializer.data
+        data["permissions"] = get_user_permissions_dict(request.user)
+        return Response(data)
 
     @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated])
     def change_password(self, request):
@@ -56,6 +59,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 )
             user.set_password(serializer.validated_data["new_password"])
             user.save()
+            send_password_changed_email(user)
             return Response({"detail": "Password changed successfully."})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -84,6 +88,12 @@ class ChangePasswordView(APIView):
         old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
 
+        if not new_password or len(new_password) < 8:
+            return Response(
+                {"new_password": "Password must be at least 8 characters long."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         if not user.check_password(old_password):
             return Response(
                 {"error": "Old password incorrect"},
@@ -92,5 +102,6 @@ class ChangePasswordView(APIView):
 
         user.set_password(new_password)
         user.save()
+        send_password_changed_email(user)
 
         return Response({"message": "Password updated successfully"})

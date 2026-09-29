@@ -1,5 +1,9 @@
 // import React, { useEffect, useState } from "react";
-// import { Plus, Trash2, Edit2, Check, X } from "lucide-react";
+// import Plus from "@mui/icons-material/Add"; // was lucide Plus
+// import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+// import Edit2 from "@mui/icons-material/ModeEditOutlineOutlined"; // was lucide Edit2
+// import Check from "@mui/icons-material/Check";
+// import X from "@mui/icons-material/Close"; // was lucide X
 // import PageHeader from "../../components/common/PageHeader";
 // import api from "../../services/api";
 
@@ -144,7 +148,11 @@
 // }
 
 import React, { useEffect, useState } from "react";
-import { Plus, Trash2, Edit2 } from "lucide-react";
+import { useSelector } from "react-redux";
+import Plus from "@mui/icons-material/Add";
+import Trash2 from "@mui/icons-material/Delete";
+import Edit2 from "@mui/icons-material/ModeEditOutlineOutlined";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import api from "../../services/api";
 
@@ -190,6 +198,9 @@ const S = {
 };
 
 export default function CustomFieldsPage() {
+  const canCreate = useSelector(selectHasPermission("custom_fields", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("custom_fields", "can_update"));
+  const canDelete = useSelector(selectHasPermission("custom_fields", "can_delete"));
   const [fields, setFields] = useState([]);
   const [modules, setModules] = useState([]); // Store modules from API
   const [activeModule, setActiveModule] = useState(null); // Store the active module object
@@ -244,7 +255,7 @@ export default function CustomFieldsPage() {
     
     setLoading(true);
     api
-      .get(`/custom-fields/?module_id=${activeModule.id}&page_size=100`)
+      .get(`/custom-fields/?module=${activeModule.id}&page_size=100`)
       .then((r) => {
         // Handle different response formats
         if (Array.isArray(r.data)) {
@@ -370,35 +381,37 @@ export default function CustomFieldsPage() {
           { label: "Custom Fields" },
         ]}
         actions={
-          <button
-            onClick={() => {
-              setShowForm(!showForm);
-              setEditing(null);
-              setForm({
-                label: "",
-                field_key: "",
-                field_type: "text",
-                is_required: false,
-                options: "",
-              });
-            }}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              padding: "9px 16px",
-              background: "#2E86AB",
-              color: "#fff",
-              borderRadius: 8,
-              fontWeight: 600,
-              fontSize: 13.5,
-              border: "none",
-              cursor: "pointer",
-            }}
-          >
-            <Plus size={14} />
-            {showForm ? "Cancel" : "Add Field"}
-          </button>
+          canCreate && (
+            <button
+              onClick={() => {
+                setShowForm(!showForm);
+                setEditing(null);
+                setForm({
+                  label: "",
+                  field_key: "",
+                  field_type: "text",
+                  is_required: false,
+                  options: "",
+                });
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "9px 16px",
+                background: "#2E86AB",
+                color: "#fff",
+                borderRadius: 8,
+                fontWeight: 600,
+                fontSize: 13.5,
+                border: "none",
+                cursor: "pointer",
+              }}
+            >
+              <Plus size={14} />
+              {showForm ? "Cancel" : "Add Field"}
+            </button>
+          )
         }
       />
 
@@ -738,39 +751,43 @@ export default function CustomFieldsPage() {
                         justifyContent: "flex-end",
                       }}
                     >
-                      <button
-                        onClick={() => startEdit(f)}
-                        style={{
-                          background: "none",
-                          border: "1px solid #E2E8F0",
-                          borderRadius: 6,
-                          width: 28,
-                          height: 28,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Edit2 size={12} />
-                      </button>
-                      <button
-                        onClick={() => del(f.id)}
-                        style={{
-                          background: "none",
-                          border: "1px solid #FEB2B2",
-                          borderRadius: 6,
-                          width: 28,
-                          height: 28,
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#E53E3E",
-                        }}
-                      >
-                        <Trash2 size={12} />
-                      </button>
+                      {canUpdate && (
+                        <button
+                          onClick={() => startEdit(f)}
+                          style={{
+                            background: "none",
+                            border: "1px solid #E2E8F0",
+                            borderRadius: 6,
+                            width: 28,
+                            height: 28,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Edit2 size={12} />
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button
+                          onClick={() => del(f.id)}
+                          style={{
+                            background: "none",
+                            border: "1px solid #FEB2B2",
+                            borderRadius: 6,
+                            width: 28,
+                            height: 28,
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#E53E3E",
+                          }}
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

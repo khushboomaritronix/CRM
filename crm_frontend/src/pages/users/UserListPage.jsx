@@ -1,8 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, Mail, Search } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Pencil from "@mui/icons-material/Edit"; // was lucide Pencil
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+import Mail from "@mui/icons-material/Email"; // was lucide Mail
+import Search from "@mui/icons-material/Search";
 import { fetchUsers, deleteUsers, selectList, selectLoading, selectPagination } from "../../features/users/usersSlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable, { Badge } from "../../components/common/DataTable";
 
@@ -31,6 +36,9 @@ export default function UserListPage() {
   const list        = useSelector(selectList);
   const loading     = useSelector(selectLoading);
   const pagination  = useSelector(selectPagination);
+  const canCreate = useSelector(selectHasPermission("users", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("users", "can_update"));
+  const canDelete = useSelector(selectHasPermission("users", "can_delete"));
   const [search, setSearch] = useState("");
   const [page, setPage]     = useState(1);
 
@@ -100,11 +108,13 @@ export default function UserListPage() {
         subtitle={`${pagination.count || 0} users`}
         breadcrumbs={[{ label:"Dashboard", path:"/dashboard" }, { label:"Users" }]}
         actions={
-          <Link to="/users/new"
-            style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 16px",
-              background:"#2E86AB", color:"#fff", borderRadius:8, fontWeight:600, fontSize:13.5, textDecoration:"none" }}>
-            <Plus size={14} /> New User
-          </Link>
+          canCreate && (
+            <Link to="/users/new"
+              style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"9px 16px",
+                background:"#2E86AB", color:"#fff", borderRadius:8, fontWeight:600, fontSize:13.5, textDecoration:"none" }}>
+              <Plus size={14} /> New User
+            </Link>
+          )
         }
       />
 
@@ -136,17 +146,21 @@ export default function UserListPage() {
         emptyMessage="No users found."
         actions={row => (
           <div style={{ display:"flex", gap:4, justifyContent:"flex-end" }}>
-            <button onClick={() => navigate(`/users/${row.id}/edit`)}
-              style={{ background:"none", border:"1px solid #E2E8F0", borderRadius:6,
-                width:30, height:30, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <Pencil size={13} />
-            </button>
-            <button
-              onClick={() => window.confirm(`Delete user "${row.email}"?`) && dispatch(deleteUsers(row.id))}
-              style={{ background:"none", border:"1px solid #FEB2B2", borderRadius:6,
-                width:30, height:30, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#E53E3E" }}>
-              <Trash2 size={13} />
-            </button>
+            {canUpdate && (
+              <button onClick={() => navigate(`/users/${row.id}/edit`)}
+                style={{ background:"none", border:"1px solid #E2E8F0", borderRadius:6,
+                  width:30, height:30, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                <Pencil size={13} />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={() => window.confirm(`Delete user "${row.email}"?`) && dispatch(deleteUsers(row.id))}
+                style={{ background:"none", border:"1px solid #FEB2B2", borderRadius:6,
+                  width:30, height:30, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#E53E3E" }}>
+                <Trash2 size={13} />
+              </button>
+            )}
           </div>
         )}
       />

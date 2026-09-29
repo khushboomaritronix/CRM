@@ -27,18 +27,29 @@ class DocumentCalculationService:
         Returns:
             dict with calculated values {subtotal, tax_amount, discount_amount, total}
         """
+        if document.discount_percent and document.discount_amount:
+            raise ValidationError(
+                "Set either discount_percent or discount_amount, not both."
+            )
+
+        from decimal import ROUND_HALF_UP
+        TWOPLACES = Decimal("0.01")
+
+        def money(value):
+            return Decimal(value).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
+
         subtotal = Decimal(0)
         tax = Decimal(0)
-        
+
         # Sum all items
         for item in document.items.all():
-            item_amount = item.quantity * item.unit_price
+            item_amount = money(item.quantity * item.unit_price)
             subtotal += item_amount
-            tax += item_amount * (item.tax_percent / 100)
-        
+            tax += money(item_amount * (item.tax_percent / 100))
+
         # Apply discount
         if document.discount_percent:
-            discount_amount = subtotal * (document.discount_percent / 100)
+            discount_amount = money(subtotal * (document.discount_percent / 100))
         else:
             discount_amount = document.discount_amount
         

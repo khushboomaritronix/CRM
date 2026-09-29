@@ -7,6 +7,7 @@ from apps.core.permissions import HasModulePermission
 from apps.core.services import RFQService
 from .models import RFQ, RFQResponse
 from .serializers import RFQSerializer, RFQResponseSerializer
+from .emails import send_new_rfq_notification, send_rfq_status_email
 
 class RFQViewSet(viewsets.ModelViewSet):
     queryset = RFQ.objects.all().prefetch_related("items", "responses").select_related("vendor")
@@ -17,7 +18,17 @@ class RFQViewSet(viewsets.ModelViewSet):
     filterset_fields = ["status", "vendor"]
     search_fields = ["rfq_number", "vendor__name", "subject"]
     ordering_fields = ["date", "created_at", "total"]
-    
+
+    def perform_create(self, serializer):
+        rfq = serializer.save()
+        send_new_rfq_notification(rfq)
+
+    def perform_update(self, serializer):
+        old_status = serializer.instance.status
+        rfq = serializer.save()
+        if rfq.status != old_status:
+            send_rfq_status_email(rfq, old_status, rfq.status)
+
     @action(detail=True, methods=["post"])
     def send_rfq(self, request, pk=None):
         """Send RFQ to vendor (mark as sent)"""
@@ -35,9 +46,10 @@ class RFQViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        old_status = rfq.status
         rfq.status = "sent"
         rfq.save(update_fields=["status"])
-        
+
         # Create response placeholder for this vendor
         RFQResponse.objects.get_or_create(
             rfq=rfq,
@@ -47,7 +59,9 @@ class RFQViewSet(viewsets.ModelViewSet):
                 "response_deadline": rfq.due_date,
             }
         )
-        
+
+        send_rfq_status_email(rfq, old_status, rfq.status)
+
         return Response(
             {"status": "RFQ sent successfully"},
             status=status.HTTP_200_OK
@@ -90,9 +104,12 @@ class RFQViewSet(viewsets.ModelViewSet):
                 response_obj.total = response_data.get("total", response_obj.total)
                 response_obj.save()
             
+            old_status = rfq.status
             rfq.status = "received"
             rfq.save(update_fields=["status"])
-            
+            if rfq.status != old_status:
+                send_rfq_status_email(rfq, old_status, rfq.status)
+
             return Response(
                 RFQResponseSerializer(response_obj).data,
                 status=status.HTTP_201_CREATED if created else status.HTTP_200_OK

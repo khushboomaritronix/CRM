@@ -3,6 +3,7 @@ from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.core.models import TimeStampedModel, CustomFieldValueMixin
+from apps.core.utils import money
 from apps.vendors.models import Vendor
 from apps.currencies.models import Currency
 
@@ -46,10 +47,10 @@ class RFQ(TimeStampedModel, CustomFieldValueMixin):
         subtotal = Decimal(0)
         tax = Decimal(0)
         for item in self.items.all():
-            item.amount = item.quantity * item.unit_price
+            item.amount = money(item.quantity * item.unit_price)
             item.save()
             subtotal += item.amount
-            tax += item.amount * (item.tax_percent / 100)
+            tax += money(item.amount * (item.tax_percent / 100))
         self.subtotal = subtotal
         self.tax_amount = tax
         self.total = subtotal + tax

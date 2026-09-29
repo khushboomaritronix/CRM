@@ -144,16 +144,12 @@ useEffect(() => {
             </div>
           </div>
         ))}
-        <div style={styles.card}>
-  <h3 style={styles.sectionTitle}>Custom Fields</h3>
-
-  <CustomFieldRenderer
-    moduleSlug="customers"
-    register={register}
-    errors={errors}
-    defaultValues={selected?.custom_field_values}
-  />
-</div>
+        <CustomFieldRenderer
+          moduleSlug="customers"
+          register={register}
+          errors={errors}
+          defaultValues={selected?.custom_field_values}
+        />
 
         <div style={styles.formFooter}>
           <button type="button" style={styles.btnCancel} onClick={() => navigate("/customers")}>

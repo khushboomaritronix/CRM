@@ -1,13 +1,17 @@
 import React, { useState, useRef } from "react";
-import { Upload, Download, FileText } from "lucide-react";
+import Upload from "@mui/icons-material/Upload";
+import Download from "@mui/icons-material/Download";
+import FileText from "@mui/icons-material/Description"; // was lucide FileText
 import PageHeader from "../../components/common/PageHeader";
 import api from "../../services/api";
 
 const MODULES = [
   {value:"customers",label:"Customers"},{value:"vendors",label:"Vendors"},
   {value:"rfq",label:"RFQ"},{value:"invoices",label:"Invoices"},
-  {value:"estimates",label:"Estimates"},{value:"purchase_orders",label:"Purchase Orders"},
+  {value:"estimates",label:"Estimates"},{value:"proforma_invoices",label:"Proforma Invoices"},
+  {value:"purchase_orders",label:"Purchase Orders"},
 ];
+const DOCUMENT_MODULES = ["rfq","invoices","estimates","proforma_invoices","purchase_orders"];
 
 export default function BulkOperationsPage() {
   const [mod,setMod]=useState("customers");
@@ -26,12 +30,16 @@ export default function BulkOperationsPage() {
     setImporting(false); e.target.value="";
   };
   const handleExport=async()=>{
-    const{data}=await api.get(`/bulk/export/${mod}/`,{responseType:"blob"});
-    const a=document.createElement("a"); a.href=URL.createObjectURL(data); a.download=`${mod}_export.csv`; a.click();
+    try{
+      const{data}=await api.get(`/bulk/export/${mod}/`,{responseType:"blob"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(data); a.download=`${mod}_export.csv`; a.click();
+    }catch(err){setResult({ok:false,message:err.response?.data?.detail||"Export failed."});}
   };
   const handleTemplate=async()=>{
-    const{data}=await api.get(`/bulk/template/${mod}/`,{responseType:"blob"});
-    const a=document.createElement("a"); a.href=URL.createObjectURL(data); a.download=`${mod}_template.csv`; a.click();
+    try{
+      const{data}=await api.get(`/bulk/template/${mod}/`,{responseType:"blob"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(data); a.download=`${mod}_template.csv`; a.click();
+    }catch(err){setResult({ok:false,message:err.response?.data?.detail||"Template download failed."});}
   };
 
   return(
@@ -60,6 +68,11 @@ export default function BulkOperationsPage() {
             <span style={{fontSize:14,fontWeight:700,color:"#1E3A5F"}}>Import {MODULES.find(m=>m.value===mod)?.label}</span>
           </div>
           <p style={{fontSize:13.5,color:"#6B7280",marginBottom:16,lineHeight:1.6}}>Upload a CSV file to import records in bulk. Download the template first to see the required column format.</p>
+          {DOCUMENT_MODULES.includes(mod)&&(
+            <p style={{fontSize:12.5,color:"#B45309",background:"#FFFBEB",border:"1px solid #FDE68A",borderRadius:8,padding:"9px 12px",marginBottom:16,lineHeight:1.5}}>
+              Note: this imports header fields only (no line items) — add items to each record afterward. Customer/Vendor/Currency columns need the numeric ID, not the name.
+            </p>
+          )}
           <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
             <button onClick={handleTemplate} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 14px",background:"#fff",color:"#374151",borderRadius:8,fontWeight:600,fontSize:13.5,border:"1px solid #E2E8F0",cursor:"pointer"}}>
               <FileText size={14}/>Download Template

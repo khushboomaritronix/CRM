@@ -83,8 +83,14 @@ export default function OrderReturnFormPage() {
     reset,
     watch,
     formState: { errors: e },
-  } = useForm({ defaultValues: { currency: "INR", status: "draft" } });
+  } = useForm({
+    defaultValues: { return_type: "sales_return", status: "pending" },
+    shouldUnregister: true,
+  });
   const [parties, setParties] = useState([]);
+  const [vendors, setVendors] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
+  const returnType = watch("return_type");
   const [items, setItems] = useState([
     {
       description: "",
@@ -101,6 +107,16 @@ export default function OrderReturnFormPage() {
       .get("/customers/?page_size=200")
       .then((r) =>
         setParties(Array.isArray(r.data) ? r.data : r.data.results || []),
+      );
+    api
+      .get("/vendors/?page_size=200")
+      .then((r) =>
+        setVendors(Array.isArray(r.data) ? r.data : r.data.results || []),
+      );
+    api
+      .get("/currencies/?is_active=true")
+      .then((r) =>
+        setCurrencies(Array.isArray(r.data) ? r.data : r.data.results || []),
       );
     if (isEdit) dispatch(fetchOneOrderReturns(id));
   }, [dispatch, id, isEdit]);
@@ -152,27 +168,51 @@ export default function OrderReturnFormPage() {
                 </div>
               )}
             </div>
-            <div>
-              <label style={Ls}>
-                Customer <span style={{ color: "#EF4444" }}>*</span>
-              </label>
-              <select
-                style={Sl}
-                {...reg("customer", { required: "Customer is required" })}
-              >
-                <option value="">Select Customer...</option>
-                {parties.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-              {e.customer && (
-                <div style={{ fontSize: 11.5, color: "#DC2626", marginTop: 3 }}>
-                  {e.customer.message}
-                </div>
-              )}
-            </div>
+            {returnType === "purchase_return" ? (
+              <div>
+                <label style={Ls}>
+                  Vendor <span style={{ color: "#EF4444" }}>*</span>
+                </label>
+                <select
+                  style={Sl}
+                  {...reg("vendor", { required: "Vendor is required" })}
+                >
+                  <option value="">Select Vendor...</option>
+                  {vendors.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
+                {e.vendor && (
+                  <div style={{ fontSize: 11.5, color: "#DC2626", marginTop: 3 }}>
+                    {e.vendor.message}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label style={Ls}>
+                  Customer <span style={{ color: "#EF4444" }}>*</span>
+                </label>
+                <select
+                  style={Sl}
+                  {...reg("customer", { required: "Customer is required" })}
+                >
+                  <option value="">Select Customer...</option>
+                  {parties.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                {e.customer && (
+                  <div style={{ fontSize: 11.5, color: "#DC2626", marginTop: 3 }}>
+                    {e.customer.message}
+                  </div>
+                )}
+              </div>
+            )}
             <div>
               <label style={Ls}>
                 Date <span style={{ color: "#EF4444" }}>*</span>
@@ -201,9 +241,10 @@ export default function OrderReturnFormPage() {
             <div>
               <label style={Ls}>Currency</label>
               <select style={Sl} {...reg("currency")}>
-                {["INR", "USD", "EUR", "GBP", "AED"].map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                <option value="">Select Currency...</option>
+                {currencies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.code} ({c.symbol})
                   </option>
                 ))}
               </select>

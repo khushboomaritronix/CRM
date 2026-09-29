@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, FileDown } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Pencil from "@mui/icons-material/Edit"; // was lucide Pencil
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+import FileDown from "@mui/icons-material/FileDownload"; // was lucide FileDown
 import {
   fetchPurchaseOrders,
   deletePurchaseOrders,
@@ -9,6 +12,7 @@ import {
   selectLoading,
   selectPagination,
 } from "../../features/purchaseOrders/purchaseOrdersSlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable from "../../components/common/DataTable";
 import api from "../../services/api";
@@ -106,6 +110,9 @@ export default function POListPage() {
   const list = useSelector(selectList);
   const loading = useSelector(selectLoading);
   const pagination = useSelector(selectPagination);
+  const canCreate = useSelector(selectHasPermission("purchase_orders", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("purchase_orders", "can_update"));
+  const canDelete = useSelector(selectHasPermission("purchase_orders", "can_delete"));
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
@@ -188,9 +195,11 @@ export default function POListPage() {
           { label: "Purchase Orders" },
         ]}
         actions={
-          <Link to="/purchase-orders/new" style={btnPri}>
-            <Plus size={14} /> New Purchase Order
-          </Link>
+          canCreate && (
+            <Link to="/purchase-orders/new" style={btnPri}>
+              <Plus size={14} /> New Purchase Order
+            </Link>
+          )
         }
       />
       <div
@@ -249,18 +258,22 @@ export default function POListPage() {
             >
               <FileDown size={13} />
             </button>
-            <button
-              onClick={() => navigate(`/purchase-orders/${row.id}/edit`)}
-              style={iBtn()}
-            >
-              <Pencil size={13} />
-            </button>
-            <button
-              onClick={() => del(row.id, row.po_number)}
-              style={iBtn({ border: "1px solid #FEB2B2", color: "#E53E3E" })}
-            >
-              <Trash2 size={13} />
-            </button>
+            {canUpdate && (
+              <button
+                onClick={() => navigate(`/purchase-orders/${row.id}/edit`)}
+                style={iBtn()}
+              >
+                <Pencil size={13} />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={() => del(row.id, row.po_number)}
+                style={iBtn({ border: "1px solid #FEB2B2", color: "#E53E3E" })}
+              >
+                <Trash2 size={13} />
+              </button>
+            )}
           </div>
         )}
       />

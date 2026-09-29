@@ -11,7 +11,8 @@ import {
 } from "../../features/rfq/rfqSlice";
 import PageHeader from "../../components/common/PageHeader";
 import api from "../../services/api";
-import { Plus, Trash2 } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
 import CustomFieldRenderer from "../../components/common/CustomFieldRenderer";
 
 const S = {
@@ -633,16 +634,12 @@ useEffect(() => {
             </div>
           </div>
         </div>
-        <div style={S.card}>
-  <div style={S.sec}>Custom Fields</div>
-
-  <CustomFieldRenderer
-    moduleSlug="rfq"
-    register={reg}
-    errors={errs}
-    defaultValues={selected?.custom_field_values}
-  />
-</div>
+        <CustomFieldRenderer
+          moduleSlug="rfq"
+          register={reg}
+          errors={errs}
+          defaultValues={selected?.custom_field_values}
+        />
 
         <div style={S.footer}>
           <button type="button" style={S.btnC} onClick={() => navigate("/rfq")}>

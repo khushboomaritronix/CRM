@@ -57,6 +57,52 @@ def get_module_config(module):
             "fields": ["name", "description", "sku", "unit", "unit_price", "tax_percent", "is_active"],
             "required_fields": ["name", "unit_price"],
         },
+        "rfq": {
+            "model_path": "apps.rfq.models",
+            "model_name": "RFQ",
+            "fields": ["rfq_number", "vendor_id", "currency_id", "date", "due_date",
+                       "status", "subject", "notes", "terms"],
+            "required_fields": ["rfq_number", "vendor_id", "date"],
+            "lookup_field": "rfq_number",
+            "note": "vendor_id/currency_id are numeric IDs. Header only — line items must be added after import.",
+        },
+        "estimates": {
+            "model_path": "apps.invoices.models",
+            "model_name": "Estimate",
+            "fields": ["estimate_number", "customer_id", "currency_id", "date", "due_date",
+                       "valid_until", "status", "reference", "po_reference", "adjustment",
+                       "notes", "terms"],
+            "required_fields": ["estimate_number", "customer_id", "currency_id", "date"],
+            "lookup_field": "estimate_number",
+            "note": "customer_id/currency_id are numeric IDs. Header only — line items must be added after import.",
+        },
+        "invoices": {
+            "model_path": "apps.invoices.models",
+            "model_name": "Invoice",
+            "fields": ["invoice_number", "customer_id", "currency_id", "date", "due_date",
+                       "status", "reference", "po_reference", "adjustment", "notes", "terms"],
+            "required_fields": ["invoice_number", "customer_id", "currency_id", "date"],
+            "lookup_field": "invoice_number",
+            "note": "customer_id/currency_id are numeric IDs. Header only — line items must be added after import.",
+        },
+        "proforma_invoices": {
+            "model_path": "apps.invoices.models",
+            "model_name": "ProformaInvoice",
+            "fields": ["proforma_number", "customer_id", "currency_id", "date", "due_date",
+                       "status", "reference", "po_reference", "adjustment", "notes", "terms"],
+            "required_fields": ["proforma_number", "customer_id", "currency_id", "date"],
+            "lookup_field": "proforma_number",
+            "note": "customer_id/currency_id are numeric IDs. Header only — line items must be added after import.",
+        },
+        "purchase_orders": {
+            "model_path": "apps.invoices.models",
+            "model_name": "PurchaseOrder",
+            "fields": ["po_number", "vendor_id", "currency_id", "date", "expected_date",
+                       "status", "po_reference", "adjustment", "notes", "terms"],
+            "required_fields": ["po_number", "vendor_id", "currency_id", "date"],
+            "lookup_field": "po_number",
+            "note": "vendor_id/currency_id are numeric IDs. Header only — line items must be added after import.",
+        },
     }
     return configs.get(module)
 
@@ -142,7 +188,7 @@ class BulkImportView(views.APIView):
                             data[field] = value
                     
                     # Check for duplicate email/unique fields
-                    lookup_field = "email" if "email" in data else "name"
+                    lookup_field = config.get("lookup_field") or ("email" if "email" in data else "name")
                     
                     # Try to create object (will validate model constraints)
                     try:

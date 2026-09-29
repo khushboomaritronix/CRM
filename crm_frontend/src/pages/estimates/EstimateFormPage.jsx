@@ -304,16 +304,12 @@ const currencyCode = currencyObj?.code || "INR";
             </div>
           </div>
         </div>
-        <div style={Cs}>
-  <div style={Ss}>Custom Fields</div>
-
-  <CustomFieldRenderer
-    moduleSlug="estimates"
-    register={reg}
-    errors={e}
-    defaultValues={selected?.custom_field_values}
-  />
-</div>
+        <CustomFieldRenderer
+          moduleSlug="estimates"
+          register={reg}
+          errors={e}
+          defaultValues={selected?.custom_field_values}
+        />
         <div
           style={{
             display: "flex",

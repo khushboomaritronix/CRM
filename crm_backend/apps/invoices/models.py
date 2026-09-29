@@ -1,7 +1,15 @@
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
+from django.core.exceptions import ValidationError
 from django.db import models
 from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 from apps.customers.models import Customer
+
+TWOPLACES = Decimal("0.01")
+
+
+def money(value):
+    """Round a Decimal to 2 decimal places for storage in a money field."""
+    return Decimal(value).quantize(TWOPLACES, rounding=ROUND_HALF_UP)
 
 DOCUMENT_STATUS = [
     ("draft", "Draft"),
@@ -49,14 +57,18 @@ class BaseDocument(TimeStampedModel, CustomFieldValueMixin):
         abstract = True
 
     def recalculate(self):
+        if self.discount_percent and self.discount_amount:
+            raise ValidationError(
+                "Set either discount_percent or discount_amount, not both."
+            )
         subtotal = Decimal(0)
         tax = Decimal(0)
         for item in self.items.all():
-            item.amount = item.quantity * item.unit_price
+            item.amount = money(item.quantity * item.unit_price)
             item.save()
             subtotal += item.amount
-            tax += item.amount * (item.tax_percent / 100)
-        discount = subtotal * (self.discount_percent / 100) if self.discount_percent else self.discount_amount
+            tax += money(item.amount * (item.tax_percent / 100))
+        discount = money(subtotal * (self.discount_percent / 100)) if self.discount_percent else self.discount_amount
         self.subtotal = subtotal
         self.tax_amount = tax
         self.discount_amount = discount
@@ -172,13 +184,13 @@ class PurchaseOrder(TimeStampedModel, CustomFieldValueMixin):
     def recalculate(self):
         subtotal = tax = Decimal(0)
         for item in self.items.all():
-            item.amount = item.quantity * item.unit_price
+            item.amount = money(item.quantity * item.unit_price)
             item.save()
             subtotal += item.amount
-            tax += item.amount * (item.tax_percent / 100)
+            tax += money(item.amount * (item.tax_percent / 100))
         self.subtotal = subtotal
         self.tax_amount = tax
-        self.total = subtotal + tax
+        self.total = subtotal + tax + self.adjustment
         self.save(update_fields=["subtotal", "tax_amount", "total"])
 
 
@@ -203,6 +215,16 @@ class FinalInvoice(BaseDocument):
 
     def __str__(self):
         return self.final_number
+
+    def clean(self):
+        if self.invoice_id and self.proforma_id:
+            raise ValidationError(
+                "A Final Invoice cannot be linked to both an Invoice and a Proforma Invoice."
+            )
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
 
 
 class FinalInvoiceItem(BaseDocumentItem):

@@ -1,5 +1,6 @@
 import React from "react";
-import { Plus, Trash2 } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
 
 const S_inp = {
   width: "100%",

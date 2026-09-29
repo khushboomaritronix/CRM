@@ -400,7 +400,7 @@ import DocLineItems from "../../components/common/DocLineItems";
 import CustomerAddressBlock from "../../components/common/CustomerAddressBlock";
 import api from "../../services/api";
 import CustomFieldRenderer from "../../components/common/CustomFieldRenderer";
-import { CreditCard } from "lucide-react"; // Import the icon
+import CreditCard from "@mui/icons-material/CreditCard"; // Import the icon
 
 const Cs = {
   background: "#fff",
@@ -749,15 +749,12 @@ export default function FinalInvoiceFormPage() {
           </div>
         </div>
 
-        <div style={Cs}>
-          <div style={Ss}>Custom Fields</div>
-          <CustomFieldRenderer
-            moduleSlug="final_invoices"
-            register={reg}
-            errors={e}
-            defaultValues={selected?.custom_field_values}
-          />
-        </div>
+        <CustomFieldRenderer
+          moduleSlug="final_invoices"
+          register={reg}
+          errors={e}
+          defaultValues={selected?.custom_field_values}
+        />
 
         <div
           style={{

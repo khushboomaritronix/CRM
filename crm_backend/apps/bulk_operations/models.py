@@ -7,7 +7,7 @@ from django.conf import settings
 
 
 class ImportHistory(TimeStampedModel):
-    STATUS_CHOICES = [("pending", "Pending"), ("success", "Success"), ("failed", "Failed")]
+    STATUS_CHOICES = [("pending", "Pending"), ("success", "Success"), ("partial", "Partial"), ("failed", "Failed")]
     module = models.CharField(max_length=50)
     file_name = models.CharField(max_length=200)
     total_rows = models.PositiveIntegerField(default=0)

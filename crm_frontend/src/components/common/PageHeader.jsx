@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import ChevronRight from "@mui/icons-material/ChevronRight";
 
 export default function PageHeader({
   title,

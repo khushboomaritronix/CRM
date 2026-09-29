@@ -1,8 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Shield, Check, X, Save, Users, ArrowLeft } from "lucide-react";
+import Shield from "@mui/icons-material/Shield";
+import Check from "@mui/icons-material/Check";
+import X from "@mui/icons-material/Close"; // was lucide X
+import Save from "@mui/icons-material/Save";
+import Users from "@mui/icons-material/People"; // was lucide Users
+import ArrowLeft from "@mui/icons-material/ArrowBack"; // was lucide ArrowLeft
 import PageHeader from "../../components/common/PageHeader";
 import api from "../../services/api";
+import toast from "react-hot-toast";
 
 const ACTIONS = ["can_view","can_create","can_update","can_delete","can_export","can_import","can_print"];
 const ACTION_LABELS = { can_view:"View", can_create:"Create", can_update:"Update", can_delete:"Delete", can_export:"Export", can_import:"Import", can_print:"PDF" };
@@ -21,8 +27,8 @@ export default function RoleDetailPage() {
     if (!id || id==="new") return;
     Promise.all([
       api.get(`/roles/${id}/`),
-      api.get("/modules/?page_size=50"),
-      api.get("/permissions/?page_size=50"),
+      api.get("/modules/?page_size=200"),
+      api.get("/permissions/?page_size=200"),
       api.get(`/role-permission/?role=${id}&page_size=200`),
       api.get(`/role-user/?role=${id}&page_size=100`),
     ]).then(([r,m,p,rp,ru]) => {
@@ -45,14 +51,18 @@ export default function RoleDetailPage() {
     const key = `${module.slug}__${perm.codename}`;
     const existingId = matrix[key];
     const newMatrix = {...matrix};
-    if (existingId) {
-      await api.delete(`/role-permission/${existingId}/`);
-      delete newMatrix[key];
-    } else {
-      const res = await api.post("/role-permission/", { role: parseInt(id), module: module.id, permission: perm.id });
-      newMatrix[key] = res.data.id;
+    try {
+      if (existingId) {
+        await api.delete(`/role-permission/${existingId}/`);
+        delete newMatrix[key];
+      } else {
+        const res = await api.post("/role-permission/", { role: parseInt(id), module: module.id, permission: perm.id });
+        newMatrix[key] = res.data.id;
+      }
+      setMatrix(newMatrix);
+    } catch (err) {
+      toast.error("Failed to update permission. Please try again.");
     }
-    setMatrix(newMatrix);
   };
 
   const hasAll = (mod) => ACTIONS.every(a => {
@@ -61,29 +71,34 @@ export default function RoleDetailPage() {
   });
 
   const toggleAll = async (mod) => {
-    if (hasAll(mod)) {
-      for (const a of ACTIONS) {
-        const perm = permissions.find(p=>p.codename===a);
-        if (!perm) continue;
-        const key = `${mod.slug}__${a}`;
-        if (matrix[key]) { await api.delete(`/role-permission/${matrix[key]}/`); }
-      }
-    } else {
-      for (const a of ACTIONS) {
-        const perm = permissions.find(p=>p.codename===a);
-        if (!perm) continue;
-        const key = `${mod.slug}__${a}`;
-        if (!matrix[key]) {
-          const res = await api.post("/role-permission/", {role:parseInt(id),module:mod.id,permission:perm.id});
-          matrix[key] = res.data.id;
+    try {
+      if (hasAll(mod)) {
+        for (const a of ACTIONS) {
+          const perm = permissions.find(p=>p.codename===a);
+          if (!perm) continue;
+          const key = `${mod.slug}__${a}`;
+          if (matrix[key]) { await api.delete(`/role-permission/${matrix[key]}/`); }
+        }
+      } else {
+        for (const a of ACTIONS) {
+          const perm = permissions.find(p=>p.codename===a);
+          if (!perm) continue;
+          const key = `${mod.slug}__${a}`;
+          if (!matrix[key]) {
+            const res = await api.post("/role-permission/", {role:parseInt(id),module:mod.id,permission:perm.id});
+            matrix[key] = res.data.id;
+          }
         }
       }
+    } catch (err) {
+      toast.error("Failed to update permissions. Please try again.");
+    } finally {
+      const res = await api.get(`/role-permission/?role=${id}&page_size=200`);
+      const rpList = Array.isArray(res.data)?res.data:res.data.results||[];
+      const mat = {};
+      rpList.forEach(rpi => { mat[`${rpi.module_slug||rpi.module}__${rpi.permission_codename||rpi.permission}`] = rpi.id; });
+      setMatrix({...mat});
     }
-    const res = await api.get(`/role-permission/?role=${id}&page_size=200`);
-    const rpList = Array.isArray(res.data)?res.data:res.data.results||[];
-    const mat = {};
-    rpList.forEach(rpi => { mat[`${rpi.module_slug||rpi.module}__${rpi.permission_codename||rpi.permission}`] = rpi.id; });
-    setMatrix({...mat});
   };
 
   if (id==="new") return (

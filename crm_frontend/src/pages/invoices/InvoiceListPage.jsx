@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Pencil, Trash2, FileDown } from "lucide-react";
+import Plus from "@mui/icons-material/Add"; // was lucide Plus
+import Pencil from "@mui/icons-material/Edit"; // was lucide Pencil
+import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+import FileDown from "@mui/icons-material/FileDownload"; // was lucide FileDown
 import {
   fetchInvoices,
   deleteInvoices,
@@ -9,6 +12,7 @@ import {
   selectLoading,
   selectPagination,
 } from "../../features/invoices/invoicesSlice";
+import { selectHasPermission } from "../../features/auth/authSlice";
 import PageHeader from "../../components/common/PageHeader";
 import DataTable from "../../components/common/DataTable";
 import api from "../../services/api";
@@ -108,6 +112,9 @@ export default function InvoiceListPage() {
   const list = useSelector(selectList);
   const loading = useSelector(selectLoading);
   const pagination = useSelector(selectPagination);
+  const canCreate = useSelector(selectHasPermission("invoices", "can_create"));
+  const canUpdate = useSelector(selectHasPermission("invoices", "can_update"));
+  const canDelete = useSelector(selectHasPermission("invoices", "can_delete"));
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [page, setPage] = useState(1);
@@ -189,9 +196,11 @@ export default function InvoiceListPage() {
           { label: "Invoices" },
         ]}
         actions={
-          <Link to="/invoices/new" style={btnPri}>
-            <Plus size={14} /> New Invoice
-          </Link>
+          canCreate && (
+            <Link to="/invoices/new" style={btnPri}>
+              <Plus size={14} /> New Invoice
+            </Link>
+          )
         }
       />
       <div
@@ -250,18 +259,22 @@ export default function InvoiceListPage() {
             >
               <FileDown size={13} />
             </button>
-            <button
-              onClick={() => navigate(`/invoices/${row.id}/edit`)}
-              style={iBtn()}
-            >
-              <Pencil size={13} />
-            </button>
-            <button
-              onClick={() => del(row.id, row.invoice_number)}
-              style={iBtn({ border: "1px solid #FEB2B2", color: "#E53E3E" })}
-            >
-              <Trash2 size={13} />
-            </button>
+            {canUpdate && (
+              <button
+                onClick={() => navigate(`/invoices/${row.id}/edit`)}
+                style={iBtn()}
+              >
+                <Pencil size={13} />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={() => del(row.id, row.invoice_number)}
+                style={iBtn({ border: "1px solid #FEB2B2", color: "#E53E3E" })}
+              >
+                <Trash2 size={13} />
+              </button>
+            )}
           </div>
         )}
       />

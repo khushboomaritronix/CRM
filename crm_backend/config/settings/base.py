@@ -63,6 +63,7 @@ LOCAL_APPS = [
     "apps.currencies",
     "apps.reports",
     "apps.customer_pos",
+    "apps.notifications",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -154,6 +155,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "apps.core.pagination.StandardPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "EXCEPTION_HANDLER": "apps.core.exceptions.custom_exception_handler",
 }
 
 # ─── JWT ──────────────────────────────────────────────────────────────────────
@@ -185,11 +187,35 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@crm.com")
 
+# ─── EMAIL — Microsoft Graph (app-only auth) ──────────────────────────────────
+# Outbound app email (account-created, password-changed, RFQ notifications) is
+# sent via Microsoft Graph's POST /users/{mailbox}/sendMail — see
+# apps.notifications.graph_email — not through EMAIL_BACKEND above, which
+# Django's own mail_admins error-reporting still uses.
+MS_TENANT_ID = env("MS_TENANT_ID", default="")
+MS_CLIENT_ID = env("MS_CLIENT_ID", default="")
+MS_CLIENT_SECRET = env("MS_CLIENT_SECRET", default="")
+
 # ─── CELERY ───────────────────────────────────────────────────────────────────
 CELERY_BROKER_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = env("REDIS_URL", default="redis://localhost:6379/0")
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = env("TIME_ZONE", default="UTC")
+# Emails are small, independent jobs — retry with backoff instead of losing
+# them if a worker dies mid-task.
+CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_DEFAULT_RETRY_DELAY = 30
+CELERY_TASK_MAX_RETRIES = 3
+# Bounds how long a producer-side call (e.g. send_email_task.delay(...) in a
+# request) can block if the broker (Redis) is unreachable, instead of
+# Celery's default of unbounded retries — the callers already catch the
+# resulting exception so a broker outage never fails the request itself.
+CELERY_BROKER_CONNECTION_TIMEOUT = 2
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 1
+# Nothing in this codebase calls .get()/.wait() on an email task's AsyncResult.
+CELERY_TASK_IGNORE_RESULT = True
 
 # ─── API DOCS ─────────────────────────────────────────────────────────────────
 SPECTACULAR_SETTINGS = {
