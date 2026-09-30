@@ -1,6 +1,9 @@
 node_modules/
 venv/
 .env
+.env.*
+!.env.example
+!.env.qat.example
 __pycache__/
 dist/
 build/
