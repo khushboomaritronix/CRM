@@ -173,7 +173,7 @@ MANAGERS = ADMINS
 # Enable password hashers with strong algorithms
 PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.PBKDF2PasswordHasher",
-    "django.contrib.auth.hashers.ArgonPasswordHasher",
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
 ]
 
 # ─── STATIC FILES ──────────────────────────────────────────────────────────────
