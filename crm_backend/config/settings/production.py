@@ -178,7 +178,14 @@ PASSWORD_HASHERS = [
 
 # ─── STATIC FILES ──────────────────────────────────────────────────────────────
 
-STATIC_URL = "/static/"
+# "/django-static/", not "/static/" — this server also serves a CRA frontend
+# build behind the same nginx host, and CRA's own build output is served at
+# /static/js/... and /static/css/.... Using the same prefix for both causes
+# nginx's /static/ location to swallow the React bundle's requests and route
+# them to this folder instead, 404ing every JS/CSS asset and leaving the
+# frontend a blank white page (only index.html's <title> loads, since that
+# part isn't a separate asset request).
+STATIC_URL = "/django-static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
