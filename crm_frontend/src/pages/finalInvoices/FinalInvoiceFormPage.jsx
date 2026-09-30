@@ -453,6 +453,7 @@ export default function FinalInvoiceFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors: e },
   } = useForm({
     defaultValues: {
@@ -654,6 +655,11 @@ export default function FinalInvoiceFormPage() {
                   ...(e.customer ? { borderColor: "#EF4444" } : {}),
                 }}
                 {...reg("customer", { required: "Required" })}
+                onChange={(ev) => {
+                  reg("customer").onChange(ev);
+                  const cust = customers.find((c) => String(c.id) === ev.target.value);
+                  if (cust?.currency) setValue("currency", cust.currency);
+                }}
               >
                 <option value="">Select Customer...</option>
                 {customers.map((c) => (

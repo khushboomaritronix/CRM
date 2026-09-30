@@ -2,6 +2,17 @@ from django.db import models
 from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 
 
+class CustomerGroup(TimeStampedModel):
+    name = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Customer(TimeStampedModel, CustomFieldValueMixin):
     # Basic Info
     name = models.CharField(max_length=200)
@@ -27,6 +38,13 @@ class Customer(TimeStampedModel, CustomFieldValueMixin):
     # Tax / Business
     gstin = models.CharField(max_length=20, blank=True)
     pan = models.CharField(max_length=20, blank=True)
+    vat_number = models.CharField(max_length=30, blank=True)
+    group = models.ForeignKey(
+        CustomerGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name="customers"
+    )
+    currency = models.ForeignKey(
+        "currencies.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="customers"
+    )
     credit_limit = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     payment_terms = models.CharField(max_length=100, blank=True)
 

@@ -65,6 +65,7 @@ export default function POFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors: e },
   } = useForm({ defaultValues: { currency: "", status: "draft",custom_field_values: {}, } });
   const [vendors, setVendors] = useState([]);
@@ -212,7 +213,15 @@ const currencyCode = currencyObj?.code || "INR";
               <label style={Ls}>
                 Vendor <span style={{ color: "#EF4444" }}>*</span>
               </label>
-              <select style={Sl} {...reg("vendor", { required: "Required" })}>
+              <select
+                style={Sl}
+                {...reg("vendor", { required: "Required" })}
+                onChange={(ev) => {
+                  reg("vendor").onChange(ev);
+                  const vend = vendors.find((v) => String(v.id) === ev.target.value);
+                  if (vend?.currency) setValue("currency", vend.currency);
+                }}
+              >
                 <option value="">Select Vendor...</option>
                 {vendors.map((v) => (
                   <option key={v.id} value={v.id}>

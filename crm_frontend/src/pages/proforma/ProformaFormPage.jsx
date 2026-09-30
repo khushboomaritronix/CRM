@@ -940,6 +940,7 @@ export default function ProformaFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors: e },
   } = useForm({
     defaultValues: {
@@ -1266,6 +1267,11 @@ export default function ProformaFormPage() {
                   ...(e.customer ? { borderColor: "#EF4444" } : {}),
                 }}
                 {...reg("customer", { required: "Required" })}
+                onChange={(ev) => {
+                  reg("customer").onChange(ev);
+                  const cust = customers.find((c) => String(c.id) === ev.target.value);
+                  if (cust?.currency) setValue("currency", cust.currency);
+                }}
               >
                 <option value="">Select customer...</option>
                 {customers.map((c) => (

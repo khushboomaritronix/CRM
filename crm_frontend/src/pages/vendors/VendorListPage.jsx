@@ -36,6 +36,7 @@ export default function VendorListPage() {
     {key:"email",label:"Email"},
     {key:"phone",label:"Phone",render:v=>v||"—"},
     {key:"gstin",label:"GSTIN",render:v=>v||"—"},
+    {key:"category_name",label:"Category",render:v=>v||"—"},
     {key:"is_active",label:"Status",render:v=><Badge color={v?"green":"gray"}>{v?"Active":"Inactive"}</Badge>},
     {key:"created_at",label:"Created",render:v=>new Date(v).toLocaleDateString()},
   ];
@@ -45,6 +46,7 @@ export default function VendorListPage() {
         breadcrumbs={[{label:"Dashboard",path:"/dashboard"},{label:"Vendors"}]}
         actions={<div style={{display:"flex",gap:8}}>
           <button onClick={handleExport} style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 14px",background:"#fff",color:"#374151",borderRadius:8,fontWeight:600,fontSize:13.5,border:"1px solid #E2E8F0",cursor:"pointer"}}><Download size={14}/>Export</button>
+          <Link to="/vendors/categories" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 14px",background:"#fff",color:"#374151",borderRadius:8,fontWeight:600,fontSize:13.5,border:"1px solid #E2E8F0",textDecoration:"none"}}>Manage Categories</Link>
           {canCreate && <Link to="/vendors/new" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"9px 16px",background:"#2E86AB",color:"#fff",borderRadius:8,fontWeight:600,fontSize:13.5,textDecoration:"none"}}><Plus size={14}/>New Vendor</Link>}
         </div>}
       />

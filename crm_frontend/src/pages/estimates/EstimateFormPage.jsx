@@ -65,6 +65,7 @@ export default function EstimateFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors: e },
   } = useForm({ defaultValues: { currency: "", status: "draft", custom_field_values: {}, } });
   const [customers, setCustomers] = useState([]);
@@ -221,7 +222,15 @@ const currencyCode = currencyObj?.code || "INR";
               <label style={Ls}>
                 Customer <span style={{ color: "#EF4444" }}>*</span>
               </label>
-              <select style={Sl} {...reg("customer", { required: "Required" })}>
+              <select
+                style={Sl}
+                {...reg("customer", { required: "Required" })}
+                onChange={(ev) => {
+                  reg("customer").onChange(ev);
+                  const cust = customers.find((c) => String(c.id) === ev.target.value);
+                  if (cust?.currency) setValue("currency", cust.currency);
+                }}
+              >
                 <option value="">Select Customer...</option>
                 {customers.map((c) => (
                   <option key={c.id} value={c.id}>

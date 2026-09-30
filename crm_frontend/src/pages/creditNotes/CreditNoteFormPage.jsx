@@ -890,6 +890,7 @@ export default function CreditNoteFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -994,6 +995,11 @@ export default function CreditNoteFormPage() {
               <select
                 style={Sl}
                 {...register("customer", { required: "Required" })}
+                onChange={(ev) => {
+                  register("customer").onChange(ev);
+                  const cust = customers.find((c) => String(c.id) === ev.target.value);
+                  if (cust?.currency_code) setValue("currency", cust.currency_code);
+                }}
               >
                 <option value="">Select customer...</option>
 

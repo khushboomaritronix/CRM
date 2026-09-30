@@ -803,6 +803,7 @@ export default function PaymentFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors: e },
   } = useForm({
     defaultValues: {
@@ -988,7 +989,15 @@ export default function PaymentFormPage() {
                 {paymentType === "received" ? "Customer" : "Vendor"}
               </label>
               {paymentType === "received" ? (
-                <select style={Sl} {...reg("customer")}>
+                <select
+                  style={Sl}
+                  {...reg("customer")}
+                  onChange={(ev) => {
+                    reg("customer").onChange(ev);
+                    const cust = customers.find(c => String(c.id) === ev.target.value);
+                    if (cust?.currency) setValue("currency", cust.currency);
+                  }}
+                >
                   <option value="">Select customer...</option>
                   {customers.map(c => (
                     <option key={c.id} value={c.id}>
@@ -997,7 +1006,15 @@ export default function PaymentFormPage() {
                   ))}
                 </select>
               ) : (
-                <select style={Sl} {...reg("vendor")}>
+                <select
+                  style={Sl}
+                  {...reg("vendor")}
+                  onChange={(ev) => {
+                    reg("vendor").onChange(ev);
+                    const vend = vendors.find(v => String(v.id) === ev.target.value);
+                    if (vend?.currency) setValue("currency", vend.currency);
+                  }}
+                >
                   <option value="">Select vendor...</option>
                   {vendors.map(v => (
                     <option key={v.id} value={v.id}>

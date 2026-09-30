@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { createCustomers, updateCustomers, fetchOneCustomers, selectSelected, selectSubmitting } from "../../features/customers/customersSlice";
 import PageHeader from "../../components/common/PageHeader";
 import CustomFieldRenderer from "../../components/common/CustomFieldRenderer";
+import api from "../../services/api";
 const FIELDS = [
   { section: "Basic Information", fields: [
     { name: "name", label: "Full Name *", required: true, colSpan: 2 },
@@ -17,6 +18,9 @@ const FIELDS = [
   { section: "Tax Information", fields: [
     { name: "gstin", label: "GSTIN" },
     { name: "pan", label: "PAN" },
+    { name: "vat_number", label: "VAT Number" },
+    { name: "group", label: "Group", type: "select", optsKey: "groups" },
+    { name: "currency", label: "Currency", type: "select", optsKey: "currencyList" },
     { name: "payment_terms", label: "Payment Terms" },
     { name: "credit_limit", label: "Credit Limit", type: "number" },
   ]},
@@ -46,6 +50,18 @@ export default function CustomerFormPage() {
   const isEdit = !!id;
   const selected = useSelector(selectSelected);
   const submitting = useSelector(selectSubmitting);
+  const [groups, setGroups] = useState([]);
+  const [currencyList, setCurrencyList] = useState([]);
+  const optsMap = { groups, currencyList };
+
+  useEffect(() => {
+    api.get("/customers/groups/?is_active=true")
+      .then(res => setGroups(Array.isArray(res.data) ? res.data : res.data?.results || []))
+      .catch(err => console.error("Error fetching customer groups:", err));
+    api.get("/currencies/?is_active=true")
+      .then(res => setCurrencyList(Array.isArray(res.data) ? res.data : res.data?.results || []))
+      .catch(err => console.error("Error fetching currencies:", err));
+  }, []);
 
   // const { register, handleSubmit, reset, formState: { errors } } = useForm();
 const { register, handleSubmit, reset, formState: { errors } } = useForm({
@@ -91,6 +107,11 @@ useEffect(() => {
     custom_field_values: custom_field_values || {}
   };
 
+  // Optional FK dropdowns (group, currency) submit "" when left unselected —
+  // DRF's PrimaryKeyRelatedField only accepts null, not an empty string.
+  if (payload.group === "") payload.group = null;
+  if (payload.currency === "") payload.currency = null;
+
   let result;
 
   if (isEdit) {
@@ -131,6 +152,18 @@ useEffect(() => {
                       {...register(f.name, { required: f.required ? `${f.label.replace(" *", "")} is required` : false })}
                       rows={3}
                     />
+                  ) : f.type === "select" ? (
+                    <select
+                      style={{ ...styles.input, ...(errors[f.name] ? styles.inputError : {}) }}
+                      {...register(f.name, { required: f.required ? `${f.label.replace(" *", "")} is required` : false })}
+                    >
+                      <option value="">Select {f.label}</option>
+                      {(optsMap[f.optsKey] || []).map((opt) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.code ? `${opt.code} - ${opt.name}` : opt.name}
+                        </option>
+                      ))}
+                    </select>
                   ) : (
                     <input
                       style={{ ...styles.input, ...(errors[f.name] ? styles.inputError : {}) }}

@@ -43,6 +43,7 @@ MODULES = [
     {"name": "Roles",              "slug": "roles",              "icon": "Shield",          "order": 19},
     {"name": "Custom Fields",      "slug": "custom_fields",      "icon": "Sliders",         "order": 20},
     {"name": "Bulk Operations",    "slug": "bulk_operations",    "icon": "Database",        "order": 21},
+    {"name": "Inventory",          "slug": "inventory",          "icon": "Package",         "order": 22},
 ]
 
 CURRENCIES = [

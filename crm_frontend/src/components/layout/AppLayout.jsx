@@ -176,6 +176,7 @@ export default function AppLayout({ children }) {
         bulk_operations: "/bulk-operations",
         customer_pos: "/customer-pos",
         modules: "/modules",
+        inventory: "/inventory/items",
       };
 
       return {

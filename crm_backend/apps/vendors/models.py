@@ -1,6 +1,19 @@
 from django.db import models
 from apps.core.models import TimeStampedModel, CustomFieldValueMixin
 
+
+class VendorCategory(TimeStampedModel):
+    name = models.CharField(max_length=100, unique=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name_plural = "vendor categories"
+
+    def __str__(self):
+        return self.name
+
+
 class Vendor(TimeStampedModel, CustomFieldValueMixin):
     name = models.CharField(max_length=200)
     vendor_code = models.CharField(
@@ -23,6 +36,13 @@ class Vendor(TimeStampedModel, CustomFieldValueMixin):
     pincode = models.CharField(max_length=20, blank=True)
     gstin = models.CharField(max_length=20, blank=True)
     pan = models.CharField(max_length=20, blank=True)
+    vat_number = models.CharField(max_length=30, blank=True)
+    category = models.ForeignKey(
+        VendorCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name="vendors"
+    )
+    currency = models.ForeignKey(
+        "currencies.Currency", on_delete=models.SET_NULL, null=True, blank=True, related_name="vendors"
+    )
     payment_terms = models.CharField(max_length=100, blank=True)
     bank_name = models.CharField(max_length=100, blank=True)
     bank_account = models.CharField(max_length=50, blank=True)
@@ -33,4 +53,3 @@ class Vendor(TimeStampedModel, CustomFieldValueMixin):
         ordering = ["-created_at"]
     def __str__(self):
         return self.name
-

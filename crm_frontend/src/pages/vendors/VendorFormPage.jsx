@@ -413,12 +413,12 @@ const CustomField = ({ field, register, errors, defaultValue }) => {
   const placeholder = field.placeholder || `Enter ${field.label.toLowerCase()}`;
   
   // Skip if this field_key conflicts with existing model fields
-  const reservedFields = ['id', 'name', 'vendor_code', 'website', 'billing_address', 
-    'shipping_address', 'return_policy', 'email', 'phone', 'company_name', 'address', 
-    'city', 'state', 'country', 'pincode', 'gstin', 'pan', 'payment_terms', 
-    'bank_name', 'bank_account', 'bank_ifsc', 'is_active', 'notes', 'created_at', 
-    'updated_at', 'custom_field_values'];
-  
+  const reservedFields = ['id', 'name', 'vendor_code', 'website', 'billing_address',
+    'shipping_address', 'return_policy', 'email', 'phone', 'company_name', 'address',
+    'city', 'state', 'country', 'pincode', 'gstin', 'pan', 'vat_number', 'category',
+    'currency', 'payment_terms', 'bank_name', 'bank_account', 'bank_ifsc', 'is_active',
+    'notes', 'created_at', 'updated_at', 'custom_field_values'];
+
   if (reservedFields.includes(field.field_key)) {
     console.warn(`Skipping custom field with reserved key: ${field.field_key}`);
     return null;
@@ -591,7 +591,19 @@ export default function VendorFormPage() {
   const [customFields, setCustomFields] = useState([]);
   const [loadingCustomFields, setLoadingCustomFields] = useState(false);
   const [vendorModule, setVendorModule] = useState(null);
-  
+  const [categories, setCategories] = useState([]);
+  const [currencyList, setCurrencyList] = useState([]);
+
+  // Fetch vendor categories and currencies for the dropdowns below
+  useEffect(() => {
+    api.get("/vendors/categories/?is_active=true")
+      .then(res => setCategories(Array.isArray(res.data) ? res.data : res.data?.results || []))
+      .catch(err => console.error("Error fetching vendor categories:", err));
+    api.get("/currencies/?is_active=true")
+      .then(res => setCurrencyList(Array.isArray(res.data) ? res.data : res.data?.results || []))
+      .catch(err => console.error("Error fetching currencies:", err));
+  }, []);
+
   const { register, handleSubmit, reset, watch, formState: { errors: errs } } = useForm({
     defaultValues: {
       custom_field_values: {} // Initialize custom_field_values
@@ -649,11 +661,11 @@ export default function VendorFormPage() {
         console.log("Fetched custom fields:", fields);
         
         // Filter out fields with reserved keys
-        const reservedFields = ['id', 'name', 'vendor_code', 'website', 'billing_address', 
-          'shipping_address', 'return_policy', 'email', 'phone', 'company_name', 'address', 
-          'city', 'state', 'country', 'pincode', 'gstin', 'pan', 'payment_terms', 
-          'bank_name', 'bank_account', 'bank_ifsc', 'is_active', 'notes', 'created_at', 
-          'updated_at', 'custom_field_values'];
+        const reservedFields = ['id', 'name', 'vendor_code', 'website', 'billing_address',
+          'shipping_address', 'return_policy', 'email', 'phone', 'company_name', 'address',
+          'city', 'state', 'country', 'pincode', 'gstin', 'pan', 'vat_number', 'category',
+          'currency', 'payment_terms', 'bank_name', 'bank_account', 'bank_ifsc', 'is_active',
+          'notes', 'created_at', 'updated_at', 'custom_field_values'];
         
         const validFields = fields.filter(f => !reservedFields.includes(f.field_key));
         
@@ -715,11 +727,16 @@ export default function VendorFormPage() {
       ...regularData,
       custom_field_values: custom_field_values || {} // Use only custom_field_values
     };
-    
+
     // Remove any stray custom_fields property if it exists
     if (payload.custom_fields) {
       delete payload.custom_fields;
     }
+
+    // Optional FK dropdowns (category, currency) submit "" when left unselected —
+    // DRF's PrimaryKeyRelatedField only accepts null, not an empty string.
+    if (payload.category === "") payload.category = null;
+    if (payload.currency === "") payload.currency = null;
     
     console.log("Submitting payload (should only have custom_field_values):", payload);
     
@@ -869,12 +886,35 @@ export default function VendorFormPage() {
               errs={errs} 
               placeholder="22AAAAA0000A1Z5"
             />
-            <Field 
-              label="PAN" 
-              name="pan" 
-              reg={register} 
-              errs={errs} 
+            <Field
+              label="PAN"
+              name="pan"
+              reg={register}
+              errs={errs}
               placeholder="ABCDE1234F"
+            />
+            <Field
+              label="VAT Number"
+              name="vat_number"
+              reg={register}
+              errs={errs}
+              placeholder="VAT registration number"
+            />
+            <Field
+              label="Category"
+              name="category"
+              type="select"
+              reg={register}
+              errs={errs}
+              opts={categories.map(c => ({ value: c.id, label: c.name }))}
+            />
+            <Field
+              label="Currency"
+              name="currency"
+              type="select"
+              reg={register}
+              errs={errs}
+              opts={currencyList.map(c => ({ value: c.id, label: `${c.code} - ${c.name}` }))}
             />
           </div>
         </div>

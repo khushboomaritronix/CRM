@@ -10,10 +10,12 @@ const CustomerPOFormPage   = lazy(() => import("../pages/customerPos/CustomerPOF
 const CustomerListPage      = lazy(() => import("../pages/customers/CustomerListPage"));
 const CustomerFormPage      = lazy(() => import("../pages/customers/CustomerFormPage"));
 const CustomerDetailPage    = lazy(() => import("../pages/customers/CustomerDetailPage"));
+const CustomerGroupsPage    = lazy(() => import("../pages/customers/CustomerGroupsPage"));
 
 // Vendors
 const VendorListPage        = lazy(() => import("../pages/vendors/VendorListPage"));
 const VendorFormPage        = lazy(() => import("../pages/vendors/VendorFormPage"));
+const VendorCategoriesPage  = lazy(() => import("../pages/vendors/VendorCategoriesPage"));
 
 // RFQ
 const RFQListPage           = lazy(() => import("../pages/rfq/RFQListPage"));
@@ -56,6 +58,9 @@ const PaymentFormPage       = lazy(() => import("../pages/payments/PaymentFormPa
 const OrderReturnListPage   = lazy(() => import("../pages/orderReturns/OrderReturnListPage"));
 const OrderReturnFormPage   = lazy(() => import("../pages/orderReturns/OrderReturnFormPage"));
 const CurrenciesPage        = lazy(() => import("../pages/currencies/CurrenciesPage"));
+const ItemListPage          = lazy(() => import("../pages/inventory/ItemListPage"));
+const ItemFormPage          = lazy(() => import("../pages/inventory/ItemFormPage"));
+const ItemGroupsPage        = lazy(() => import("../pages/inventory/ItemGroupsPage"));
 const ReportsPage           = lazy(() => import("../pages/reports/ReportsPage"));
 
 // ─── Settings ────────────────────────────────────────────────
@@ -79,6 +84,7 @@ export const moduleRoutes = [
   { path: "/customers/new",                element: <CustomerFormPage />,       module: "customers",         requiredPermission: "can_create" },
   { path: "/customers/:id",               element: <CustomerDetailPage />,     module: "customers",         requiredPermission: "can_view" },
   { path: "/customers/:id/edit",           element: <CustomerFormPage />,       module: "customers",         requiredPermission: "can_update" },
+  { path: "/customers/groups",             element: <CustomerGroupsPage />,     module: "customers",         requiredPermission: "can_view" },
 
   // Customer POs
   { path: "/customer-pos",               element: <CustomerPOListPage />,     module: "customer_pos",      requiredPermission: "can_view" },
@@ -89,6 +95,7 @@ export const moduleRoutes = [
   { path: "/vendors",                      element: <VendorListPage />,         module: "vendors",           requiredPermission: "can_view" },
   { path: "/vendors/new",                  element: <VendorFormPage />,         module: "vendors",           requiredPermission: "can_create" },
   { path: "/vendors/:id/edit",             element: <VendorFormPage />,         module: "vendors",           requiredPermission: "can_update" },
+  { path: "/vendors/categories",           element: <VendorCategoriesPage />,   module: "vendors",           requiredPermission: "can_view" },
 
   // RFQ
   { path: "/rfq",                          element: <RFQListPage />,            module: "rfq",               requiredPermission: "can_view" },
@@ -148,6 +155,12 @@ export const moduleRoutes = [
 
   // Currencies
   { path: "/currencies",                   element: <CurrenciesPage />,         module: "currencies",        requiredPermission: "can_view" },
+
+  // Inventory
+  { path: "/inventory/items",              element: <ItemListPage />,           module: "inventory",         requiredPermission: "can_view" },
+  { path: "/inventory/items/new",          element: <ItemFormPage />,           module: "inventory",         requiredPermission: "can_create" },
+  { path: "/inventory/items/:id/edit",     element: <ItemFormPage />,           module: "inventory",         requiredPermission: "can_update" },
+  { path: "/inventory/item-groups",        element: <ItemGroupsPage />,         module: "inventory",         requiredPermission: "can_view" },
 
   // Reports
   { path: "/reports",                      element: <ReportsPage />,            module: "reports",           requiredPermission: "can_view" },

@@ -82,6 +82,7 @@ export default function OrderReturnFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors: e },
   } = useForm({
     defaultValues: { return_type: "sales_return", status: "pending" },
@@ -176,6 +177,11 @@ export default function OrderReturnFormPage() {
                 <select
                   style={Sl}
                   {...reg("vendor", { required: "Vendor is required" })}
+                  onChange={(ev) => {
+                    reg("vendor").onChange(ev);
+                    const vend = vendors.find((v) => String(v.id) === ev.target.value);
+                    if (vend?.currency) setValue("currency", vend.currency);
+                  }}
                 >
                   <option value="">Select Vendor...</option>
                   {vendors.map((v) => (
@@ -198,6 +204,11 @@ export default function OrderReturnFormPage() {
                 <select
                   style={Sl}
                   {...reg("customer", { required: "Customer is required" })}
+                  onChange={(ev) => {
+                    reg("customer").onChange(ev);
+                    const cust = parties.find((p) => String(p.id) === ev.target.value);
+                    if (cust?.currency) setValue("currency", cust.currency);
+                  }}
                 >
                   <option value="">Select Customer...</option>
                   {parties.map((p) => (

@@ -141,7 +141,11 @@ export default function DeliveryNoteFormPage() {
           </label>
           <select
             value={form.customer}
-            onChange={(e) => setForm({ ...form, customer: e.target.value })}
+            onChange={(e) => {
+              const custId = e.target.value;
+              const cust = customers.find((c) => String(c.id) === custId);
+              setForm({ ...form, customer: custId, currency: cust?.currency || form.currency });
+            }}
             required
             style={{
               width: "100%",
@@ -155,6 +159,30 @@ export default function DeliveryNoteFormPage() {
             {customers.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ display: "block", marginBottom: 8, fontWeight: 600, color: "#374151" }}>
+            Currency
+          </label>
+          <select
+            value={form.currency}
+            onChange={(e) => setForm({ ...form, currency: e.target.value })}
+            style={{
+              width: "100%",
+              padding: "10px 12px",
+              border: "1px solid #E2E8F0",
+              borderRadius: 6,
+              fontSize: 14,
+            }}
+          >
+            <option value="">Select Currency</option>
+            {currencies.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.code} ({c.symbol})
               </option>
             ))}
           </select>

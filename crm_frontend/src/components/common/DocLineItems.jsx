@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Plus from "@mui/icons-material/Add"; // was lucide Plus
 import Trash2 from "@mui/icons-material/Delete"; // was lucide Trash2
+import api from "../../services/api";
 
 const S_inp = {
   width: "100%",
@@ -23,6 +24,18 @@ export default function DocLineItems({
   setAdjustment,
   showHSN = false,
 }) {
+  const [itemsMaster, setItemsMaster] = useState([]);
+  const [currencyList, setCurrencyList] = useState([]);
+
+  useEffect(() => {
+    api.get("/inventory/items/?is_active=true")
+      .then((r) => setItemsMaster(Array.isArray(r.data) ? r.data : r.data?.results || []))
+      .catch((err) => console.error("Error fetching items:", err));
+    api.get("/currencies/?is_active=true")
+      .then((r) => setCurrencyList(Array.isArray(r.data) ? r.data : r.data?.results || []))
+      .catch((err) => console.error("Error fetching currencies:", err));
+  }, []);
+
   const update = (idx, field, val) =>
     setItems((prev) =>
       prev.map((it, i) => {
@@ -32,6 +45,29 @@ export default function DocLineItems({
         return u;
       }),
     );
+
+  const applyItem = (idx, itemId) => {
+    const master = itemsMaster.find((it) => String(it.id) === String(itemId));
+    if (!master) return;
+    const curr = currencyList.find((c) => c.code === currency);
+    const rateRow = curr && master.rates?.find((r) => String(r.currency) === String(curr.id));
+    setItems((prev) =>
+      prev.map((it, i) => {
+        if (i !== idx) return it;
+        const unit_price = rateRow ? rateRow.rate : it.unit_price;
+        const u = {
+          ...it,
+          item_name: master.name,
+          description: master.description || it.description,
+          unit: master.unit || it.unit,
+          unit_price,
+          tax_percent: (+master.tax1_percent || 0) + (+master.tax2_percent || 0),
+        };
+        u.amount = ((+u.quantity || 0) * (+unit_price || 0)).toFixed(2);
+        return u;
+      }),
+    );
+  };
 
   const sub = items.reduce(
     (a, i) => a + (+i.quantity || 0) * (+i.unit_price || 0),
@@ -140,6 +176,20 @@ export default function DocLineItems({
             {items.map((item, idx) => (
               <tr key={idx} style={{ borderBottom: "1px solid #EDF2F7" }}>
                 <td style={td()}>
+                  {itemsMaster.length > 0 && (
+                    <select
+                      style={{ ...S_inp, minWidth: 110, marginBottom: 4 }}
+                      value=""
+                      onChange={(e) => e.target.value && applyItem(idx, e.target.value)}
+                    >
+                      <option value="">Pick item...</option>
+                      {itemsMaster.map((mi) => (
+                        <option key={mi.id} value={mi.id}>
+                          {mi.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                   <input
                     style={{ ...S_inp, minWidth: 110 }}
                     value={item.item_name || ""}

@@ -82,6 +82,7 @@ export default function DebitNoteFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors: e },
   } = useForm({ defaultValues: { currency: "INR", status: "draft" } });
   const [parties, setParties] = useState([]);
@@ -160,6 +161,11 @@ export default function DebitNoteFormPage() {
               <select
                 style={Sl}
                 {...reg("vendor", { required: "Vendor is required" })}
+                onChange={(ev) => {
+                  reg("vendor").onChange(ev);
+                  const vend = parties.find((p) => String(p.id) === ev.target.value);
+                  if (vend?.currency_code) setValue("currency", vend.currency_code);
+                }}
               >
                 <option value="">Select Vendor...</option>
                 {parties.map((p) => (

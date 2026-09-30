@@ -68,6 +68,7 @@ export default function CustomerListPage() {
     { key: "phone", label: "Phone" },
     { key: "company_name", label: "Company" },
     { key: "gstin", label: "GSTIN", render: (v) => v || "—" },
+    { key: "group_name", label: "Group", render: (v) => v || "—" },
     {
       key: "is_active",
       label: "Status",
@@ -100,6 +101,9 @@ export default function CustomerListPage() {
             )}
             <Link to="/bulk-operations" style={styles.btnSecondary}>
               <Upload size={15} /> Import
+            </Link>
+            <Link to="/customers/groups" style={styles.btnSecondary}>
+              Manage Groups
             </Link>
             {canCreate && (
               <Link to="/customers/new" style={styles.btnPrimary}>

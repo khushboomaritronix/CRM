@@ -22,6 +22,10 @@ import orderReturnsReducer from "../features/orderReturns/orderReturnsSlice";
 import customerPosReducer from "../features/customerPos/customerPosSlice";
 import currenciesReducer from "../features/currencies/currenciesSlice";
 import bulkOperationsReducer from "../features/bulkOperations/bulkOperationsSlice";
+import vendorCategoriesReducer from "../features/vendors/vendorCategoriesSlice";
+import customerGroupsReducer from "../features/customers/customerGroupsSlice";
+import itemGroupsReducer from "../features/inventory/itemGroupsSlice";
+import itemsReducer from "../features/inventory/itemsSlice";
 
 export const store = configureStore({
   reducer: {
@@ -48,6 +52,10 @@ export const store = configureStore({
     orderReturns: orderReturnsReducer,
     customerPos: customerPosReducer,
     currencies: currenciesReducer,
+    vendorCategories: vendorCategoriesReducer,
+    customerGroups: customerGroupsReducer,
+    itemGroups: itemGroupsReducer,
+    items: itemsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

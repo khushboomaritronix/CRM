@@ -61,8 +61,6 @@ const STATS = [
   "cancelled",
   "unpaid",
 ];
-const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD", "JPY"];
-
 export default function InvoiceFormPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -75,9 +73,11 @@ export default function InvoiceFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors: e },
-  } = useForm({ defaultValues: { currency: "INR", status: "draft" } });
+  } = useForm({ defaultValues: { currency: "", status: "draft" } });
   const [customers, setCustomers] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [items, setItems] = useState([
     {
@@ -106,6 +106,12 @@ export default function InvoiceFormPage() {
       );
     if (isEdit) dispatch(fetchOneInvoices(id));
   }, [dispatch, id, isEdit]);
+
+  useEffect(() => {
+    api.get("/currencies/?is_active=true").then((r) => {
+      setCurrencies(Array.isArray(r.data) ? r.data : r.data.results || []);
+    });
+  }, []);
 
   // Auto-fetch billing/shipping address when customer selected
   useEffect(() => {
@@ -316,6 +322,11 @@ export default function InvoiceFormPage() {
                   ...(e.customer ? { borderColor: "#EF4444" } : {}),
                 }}
                 {...reg("customer", { required: "Required" })}
+                onChange={(ev) => {
+                  reg("customer").onChange(ev);
+                  const cust = customers.find((c) => String(c.id) === ev.target.value);
+                  if (cust?.currency) setValue("currency", cust.currency);
+                }}
               >
                 <option value="">Select customer...</option>
                 {customers.map((c) => (
@@ -365,9 +376,10 @@ export default function InvoiceFormPage() {
             <div>
               <label style={Ls}>Currency</label>
               <select style={Sl} {...reg("currency")}>
-                {CURRENCIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                <option value="">Select Currency...</option>
+                {currencies.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.code} ({c.symbol})
                   </option>
                 ))}
               </select>
@@ -383,7 +395,7 @@ export default function InvoiceFormPage() {
         <DocLineItems
           items={items}
           setItems={setItems}
-          currency={watch("currency") || "INR"}
+          currency={currencies.find((c) => String(c.id) === String(watch("currency")))?.code || "INR"}
           discount={discount}
           setDiscount={setDiscount}
           adjustment={adjustment}

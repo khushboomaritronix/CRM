@@ -145,10 +145,12 @@ export default function RFQFormPage() {
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors: errs },
   } = useForm({ defaultValues: { currency: "", status: "draft" , custom_field_values: {},} });
   const [items, setItems] = useState([{ ...DI }]);
   const [parties, setParties] = useState([]);
+  const [itemsMaster, setItemsMaster] = useState([]);
   const [totals, setTotals] = useState({
     sub: "0.00",
     tax: "0.00",
@@ -157,6 +159,9 @@ export default function RFQFormPage() {
 useEffect(() => {
   api.get("/currencies/?is_active=true").then((r) => {
     setCurrencies(Array.isArray(r.data) ? r.data : r.data.results || []);
+  });
+  api.get("/inventory/items/?is_active=true").then((r) => {
+    setItemsMaster(Array.isArray(r.data) ? r.data : r.data.results || []);
   });
 }, []);
   useEffect(() => {
@@ -214,6 +219,30 @@ useEffect(() => {
     const selectedCurrency = currencies.find(
   (c) => String(c.id) === String(watch("currency"))
 );
+
+  const applyItem = (idx, itemId) => {
+    const master = itemsMaster.find((it) => String(it.id) === String(itemId));
+    if (!master) return;
+    const rateRow = selectedCurrency && master.rates?.find(
+      (r) => String(r.currency) === String(selectedCurrency.id)
+    );
+    setItems((p) =>
+      p.map((it, i) => {
+        if (i !== idx) return it;
+        const unit_price = rateRow ? rateRow.rate : it.unit_price;
+        const u = {
+          ...it,
+          item_name: master.name,
+          description: master.description || it.description,
+          unit: master.unit || it.unit,
+          unit_price,
+          tax_percent: (+master.tax1_percent || 0) + (+master.tax2_percent || 0),
+        };
+        u.amount = ((+u.quantity || 0) * (+unit_price || 0)).toFixed(2);
+        return u;
+      }),
+    );
+  };
 
   const cur = selectedCurrency?.symbol || "₹";
 
@@ -281,6 +310,11 @@ useEffect(() => {
               <select
                 style={S.sel}
                 {...reg("vendor", { required: "Vendor is required" })}
+                onChange={(ev) => {
+                  reg("vendor").onChange(ev);
+                  const vend = parties.find((p) => String(p.id) === ev.target.value);
+                  if (vend?.currency) setValue("currency", vend.currency);
+                }}
               >
                 <option value="">Select Vendor...</option>
                 {parties.map((p) => (
@@ -478,6 +512,20 @@ useEffect(() => {
                 {items.map((item, idx) => (
                   <tr key={idx} style={{ borderBottom: "1px solid #EDF2F7" }}>
                      <td style={{ padding: "7px 10px" }}>
+                      {itemsMaster.length > 0 && (
+                        <select
+                          style={{ ...S.inp, minWidth: 90, marginBottom: 4 }}
+                          value=""
+                          onChange={(e) => e.target.value && applyItem(idx, e.target.value)}
+                        >
+                          <option value="">Pick item...</option>
+                          {itemsMaster.map((mi) => (
+                            <option key={mi.id} value={mi.id}>
+                              {mi.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                       <input
                         style={{ ...S.inp, minWidth: 90 }}
                         value={item.item_name}
